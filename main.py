@@ -30,8 +30,29 @@ enemy_img2 = pg.image.load('Assets/kepek/kekhal.png').convert_alpha()  # Másodi
 #Tower betoltese
 tower_img=pg.image.load('Assets/kepek/ujLovo.png').convert_alpha()
 
+#feher terkep betoltese
+feherTerkep = pg.image.load('Assets/kepek/terkepfeher.png').convert_alpha()
+
+#def create_tower(mouse_pos):
+    #tower=Tower(tower_img,mouse_pos)
+    #tower_group.add(tower)
 def create_tower(mouse_pos):
-    tower=Tower(tower_img,mouse_pos)
+    # lehet e idepakolni
+    color = feherTerkep.get_at(mouse_pos)
+    if color == pg.Color(255, 255, 255):  # fehér → nem pakolható
+        return
+    # Torony kozepen lesz
+    new_tower_rect = tower_img.get_rect(center=mouse_pos)
+
+    # tavolsag a kozeppontok kozott
+    for tower in tower_group:
+        dist = ((tower.rect.centerx - new_tower_rect.centerx) ** 2 +
+                (tower.rect.centery - new_tower_rect.centery) ** 2) ** 0.5
+        if dist < 40:  # Ha 40 pixelnel kozelebb van a masik torony
+            return  # Nem hozok letre ujat
+
+    # Ha nincs ütközés, hozzuk létre
+    tower = Tower(tower_img, mouse_pos)
     tower_group.add(tower)
 
 

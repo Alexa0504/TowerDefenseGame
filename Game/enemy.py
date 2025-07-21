@@ -35,7 +35,8 @@ class Enemy(pg.sprite.Sprite):
         self.image = pg.transform.rotate(self.original, self.angle)
 
         # Animációhoz
-        self.animation_speed = 0.5
+        #masodpercenkent egyszer valt
+        self.animation_speed = 1
         self.last_switch_time = time.time()
 
         self.rect = self.image.get_rect()
