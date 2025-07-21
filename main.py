@@ -12,9 +12,14 @@ pg.init()
 
 clock = pg.time.Clock()
 
+pg.display.set_caption("Játék")
 ##################
 #KEPEK BETOLTESE
 ##################
+
+
+#Uj fegyverek letevése
+placing_towers=False
 
 # Térkép betöltése
 map_image = pg.image.load('Assets/kepek/terkep.png')# a térképed útvonala
@@ -143,9 +148,11 @@ while running:
 
     #gomb kirajzolása
     if buy_gomb.draw(screen):
-        print("Uj dolog")
-    if cancel_gomb.draw(screen):
-        print("Cancel")
+        placing_towers=True #Leteszi a fegyvert
+    if placing_towers == True:
+        #Ha megnyomom a buy gombot akkor megjelenik a cancel gomb
+        if cancel_gomb.draw(screen):
+            placing_towers=False
 
     #screen.fill((0, 0, 0)) háttér törlése
     enemy_group.draw(screen)
@@ -166,7 +173,7 @@ while running:
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:#bal klikk
             mouse_pos=pg.mouse.get_pos()
             #a kurzornak a jatekban kell legyen
-            if mouse_pos[0]<map_rect.width and mouse_pos[1]<map_rect.height:
+            if placing_towers and mouse_pos[0]<map_rect.width and mouse_pos[1]<map_rect.height:
                 create_tower(mouse_pos )
 
     pg.display.update()
