@@ -4,6 +4,7 @@ from Game.world import World
 from Game.enemy import Enemy
 import constants as c
 from Game.tower import Tower
+from Game.button import Button
 
 
 #inicializálom a pygamet
@@ -11,41 +12,55 @@ pg.init()
 
 clock = pg.time.Clock()
 
+##################
 #KEPEK BETOLTESE
-
+##################
 
 # Térkép betöltése
 map_image = pg.image.load('Assets/kepek/terkep.png')# a térképed útvonala
 map_rect = map_image.get_rect()
 
-#betöltöm az ablakot
-screen = pg.display.set_mode((map_rect.width, map_rect.height))
+#Ablak betöltése
+screen = pg.display.set_mode((map_rect.width+c.Side_panel, map_rect.height))#hozzaadtam a side panelt is
 map_image = map_image.convert_alpha()
 
-#Az enemy betöltése
+#Ellenség betöltése
 enemy_img1 = pg.image.load('Assets/kepek/piroshal.png').convert_alpha()  # Első kép
 enemy_img2 = pg.image.load('Assets/kepek/kekhal.png').convert_alpha()  # Második kép
 
-
-#Tower betoltese
+#Fegyver betöltése
 tower_img=pg.image.load('Assets/kepek/ujLovo.png').convert_alpha()
 
-#feher terkep betoltese
+#Térkép betöltése (Ahol fehér)
 feherTerkep = pg.image.load('Assets/kepek/terkepfeher.png').convert_alpha()
+
+# Toolbar kép betöltése
+#toolbar= pg.image.load("Assets/kepek/toolbar2.png").convert_alpha()
+# Átméretezzük, hogy pontosan kitöltse a jobb oldali sávot
+#toolbar = pg.transform.scale(toolbar, (c.Side_panel, map_rect.height))
+
+#Gombok betöltése és átméretezése
+buy_button=pg.image.load('Assets/kepek/Gombok/BuyGomb.png').convert_alpha()
+buy_button=pg.transform.scale(buy_button, (250, 230))
+cancel_button=pg.image.load('Assets/kepek/Gombok/CancelGomb.png').convert_alpha()
+cancel_button=pg.transform.scale(cancel_button, (250, 230))
 
 #def create_tower(mouse_pos):
     #tower=Tower(tower_img,mouse_pos)
     #tower_group.add(tower)
+
+#Hova lehet és hova nem lehet pakolni fegyvert
 def create_tower(mouse_pos):
     # lehet e idepakolni
     color = feherTerkep.get_at(mouse_pos)
     if color == pg.Color(255, 255, 255):  # fehér → nem pakolható
         return
-    # Torony kozepen lesz
+    # Torony kozepén lesz
     new_tower_rect = tower_img.get_rect(center=mouse_pos)
 
-    # tavolsag a kozeppontok kozott
+    # távolsag a középpontok között
     for tower in tower_group:
+        #Megnézi hogy a torony túl közel van e egy már meglévőhöz
         dist = ((tower.rect.centerx - new_tower_rect.centerx) ** 2 +
                 (tower.rect.centery - new_tower_rect.centery) ** 2) ** 0.5
         if dist < 40:  # Ha 40 pixelnel kozelebb van a masik torony
@@ -56,12 +71,16 @@ def create_tower(mouse_pos):
     tower_group.add(tower)
 
 
-#terkep keszitese
+#Térkép elkészítése
 world=World(map_image)
 
-#csoport keszitese
+#Csoportok elkészítése
 enemy_group=pg.sprite.Group()
 tower_group=pg.sprite.Group()
+
+#Új ellenségek létrehozása
+SPAWN_DELAY = 2000  # 2000 ms = 2 masodperc
+last_spawn_time = 0
 
 koordinatak=[
     (179,9),
@@ -77,20 +96,25 @@ koordinatak=[
     (955,865)
 ]
 
-#Uj enemyk keszitese
-SPAWN_DELAY = 2000  # 2000 ms = 2 masodperc
-last_spawn_time = 0
-
 
 # Ellenség létrehozásakor mindkét képet átadjuk
 enemy = Enemy(koordinatak, enemy_img1, enemy_img2)
 enemy_group.add(enemy)
+
+#Gomb létrehozása
+buy_gomb=Button(map_rect.width+30,200,buy_button,True)
+cancel_gomb=Button(map_rect.width+55,350,cancel_button,True)
 
 running = True
 while running:
 
     clock.tick(c.Framerates)
     screen.fill("grey100")
+
+        #############
+        #Kirajzolás
+        ##########
+    # Térkép kirajzolása
     world.draw(screen)
 
 
@@ -116,12 +140,23 @@ while running:
 
 
     #pg.draw.lines(screen,"grey100",False,koordinatak,2)
-    #update groups
-    enemy_group.update()
+
+    #gomb kirajzolása
+    if buy_gomb.draw(screen):
+        print("Uj dolog")
+    if cancel_gomb.draw(screen):
+        print("Cancel")
 
     #screen.fill((0, 0, 0)) háttér törlése
     enemy_group.draw(screen)
     tower_group.draw(screen)
+
+    ################
+    #UPDATEK
+    ################
+    #update groups
+    enemy_group.update()
+
 
     for event in pg.event.get():
         if event.type == pg.QUIT:
