@@ -29,6 +29,10 @@ map_rect = map_image.get_rect()
 screen = pg.display.set_mode((map_rect.width+c.Side_panel, map_rect.height))#hozzaadtam a side panelt is
 map_image = map_image.convert_alpha()
 
+#toolbar betoltese
+toolbar_image = pg.image.load('Assets/kepek/JobbHatter.png')  # Kép betöltése
+toolbar_image = pg.transform.scale(toolbar_image, (c.Side_panel, map_rect.height))  # Méretezés
+
 #Ellenség betöltése
 enemy_img1 = pg.image.load('Assets/kepek/piroshal.png').convert_alpha()  # Első kép
 enemy_img2 = pg.image.load('Assets/kepek/kekhal.png').convert_alpha()  # Második kép
@@ -45,10 +49,12 @@ feherTerkep = pg.image.load('Assets/kepek/terkepfeher.png').convert_alpha()
 #toolbar = pg.transform.scale(toolbar, (c.Side_panel, map_rect.height))
 
 #Gombok betöltése és átméretezése
-buy_button=pg.image.load('Assets/kepek/Gombok/BuyGomb.png').convert_alpha()
-buy_button=pg.transform.scale(buy_button, (250, 230))
-cancel_button=pg.image.load('Assets/kepek/Gombok/CancelGomb.png').convert_alpha()
-cancel_button=pg.transform.scale(cancel_button, (250, 230))
+buy_button=pg.image.load('Assets/kepek/Gombok/BUYGOMB.png').convert_alpha()
+buy_button=pg.transform.scale(buy_button, (200, 190))
+cancel_button=pg.image.load('Assets/kepek/Gombok/CANCELGOMB.png').convert_alpha()
+cancel_button=pg.transform.scale(cancel_button, (200, 190))
+exit_button_img = pg.image.load('Assets/kepek/Gombok/EXITGOMB.png').convert_alpha()
+exit_button_img = pg.transform.scale(exit_button_img, (200, 190))
 
 #def create_tower(mouse_pos):
     #tower=Tower(tower_img,mouse_pos)
@@ -106,9 +112,10 @@ koordinatak=[
 enemy = Enemy(koordinatak, enemy_img1, enemy_img2)
 enemy_group.add(enemy)
 
-#Gomb létrehozása
-buy_gomb=Button(map_rect.width+30,200,buy_button,True)
-cancel_gomb=Button(map_rect.width+55,350,cancel_button,True)
+#Gomb létrehozása(példányosítása) hova teszem le
+buy_gomb=Button(map_rect.width+20,50,buy_button,True)
+cancel_gomb=Button(map_rect.width+20,175,cancel_button,True)
+exit_gomb = Button(map_rect.width + 20, 300, exit_button_img, True)
 
 running = True
 while running:
@@ -122,6 +129,13 @@ while running:
     # Térkép kirajzolása
     world.draw(screen)
 
+    #Szin a toolbarnak
+    #toolbar_rect = pg.Rect(map_rect.width, 0, c.Side_panel, map_rect.height)
+    #pg.draw.rect(screen, (7,130,80), toolbar_rect)
+
+    # Toolbar kirajzolása
+    toolbar_rect = pg.Rect(map_rect.width, 0, c.Side_panel, map_rect.height)
+    screen.blit(toolbar_image, toolbar_rect)
 
      #Sebezhetoseg
     #for event in pg.event.get():
@@ -153,6 +167,10 @@ while running:
         #Ha megnyomom a buy gombot akkor megjelenik a cancel gomb
         if cancel_gomb.draw(screen):
             placing_towers=False
+
+    # Exit gomb kezelése
+    if exit_gomb.draw(screen):
+        running = False
 
     #screen.fill((0, 0, 0)) háttér törlése
     enemy_group.draw(screen)
