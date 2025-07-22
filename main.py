@@ -37,8 +37,18 @@ toolbar_image = pg.transform.scale(toolbar_image, (c.Side_panel, map_rect.height
 enemy_img1 = pg.image.load('Assets/kepek/piroshal.png').convert_alpha()  # Első kép
 enemy_img2 = pg.image.load('Assets/kepek/kekhal.png').convert_alpha()  # Második kép
 
+#A fegyver animaciojanak betoltese
+tower_frames = [
+    pg.image.load('Assets/kepek/Lovo/ujLovo.png').convert_alpha(),
+    pg.image.load('Assets/kepek/Lovo/ujLovo2.png').convert_alpha(),
+    pg.image.load('Assets/kepek/Lovo/ujLovo3.png').convert_alpha(),
+    pg.image.load('Assets/kepek/Lovo/ujLovo4.png').convert_alpha()
+]
+tower_frames = [pg.transform.scale(img, (100,100)) for img in tower_frames]
+
 #Fegyver betöltése
-tower_img=pg.image.load('Assets/kepek/ujLovo.png').convert_alpha()
+tower_img=pg.image.load('Assets/kepek/Lovo/ujLovo.png').convert_alpha()
+tower_img = pg.transform.scale(tower_img, (100, 100))
 
 #Térkép betöltése (Ahol fehér)
 feherTerkep = pg.image.load('Assets/kepek/terkepfeher.png').convert_alpha()
@@ -78,7 +88,7 @@ def create_tower(mouse_pos):
             return  # Nem hozok letre ujat
 
     # Ha nincs ütközés, hozzuk létre
-    tower = Tower(tower_img, mouse_pos)
+    tower = Tower(tower_frames, mouse_pos)
     tower_group.add(tower)
 
 
@@ -181,7 +191,17 @@ while running:
     ################
     #update groups
     enemy_group.update()
+    tower_group.update()
 
+    # UPDATE-ek után: lőjenek a tornyok, ha enemy van a közelben
+    for tower in tower_group:
+        for enemy in enemy_group:
+            distance = ((tower.rect.centerx - enemy.rect.centerx) ** 2 +
+                        (tower.rect.centery - enemy.rect.centery) ** 2) ** 0.5
+            if distance < 100:  # 100 px-en belül van
+                tower.fire()
+                enemy.take_damage(5)
+                break  # csak egy enemy-re lő egyszerre
 
     for event in pg.event.get():
         if event.type == pg.QUIT:
