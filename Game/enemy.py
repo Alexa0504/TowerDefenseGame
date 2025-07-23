@@ -3,14 +3,15 @@ from pygame.math import Vector2
 import math
 import time
 import random
+#from main import explosion_group, bumm_img, Explosion
 
 
 class Enemy(pg.sprite.Sprite):
-    def __init__(self, koordinatak, image1, image2, health=100):  # ket kepet hasznalok
+    def __init__(self, waypoint, image1, image2, health=100):  # ket kepet hasznalok a halakra
         pg.sprite.Sprite.__init__(self)
-        self.koordinatak = koordinatak
-        self.position = Vector2(self.koordinatak[0])
-        self.target_koordinata = 1
+        self.waypoint = waypoint
+        self.position = Vector2(self.waypoint[0])
+        self.target_waypoint = 1
         self.speed = 2
         self.health = health
         self.angle = 0
@@ -50,6 +51,7 @@ class Enemy(pg.sprite.Sprite):
     def animate(self):
         # Képváltás időzítése
         current_time = time.time()
+        #Ha eltelt több, mint 1 másodperc a képváltás óta
         if current_time - self.last_switch_time > self.animation_speed:
             self.last_switch_time = current_time
             # Kép váltogatása
@@ -61,14 +63,19 @@ class Enemy(pg.sprite.Sprite):
             self.original = self.current_image
 
     def move(self):
-        # Ha már elérte az utolsó waypointot, távolítsuk el
-        if self.target_koordinata < len(self.koordinatak):
-            # define target waypoint
-            self.target = Vector2(self.koordinatak[self.target_koordinata])
-            self.movement = self.target - self.position
+        # Ha már elérte az utolsó utvonalpontot, távolítsuk el, addig is irányvektort számítunk
+        if self.target_waypoint < len(self.waypoint):
+            # a target a következő utvonalpontra utal
+            self.target = Vector2(self.waypoint[self.target_waypoint])#Vektorként tárolja nem tupleként
+            self.movement = self.target - self.position#Honnan hová, irányvektor
         else:
             #eleri az enemy a veget a palyanak
             self.kill()
+        #else:
+            # ellenség eléri a pálya végét → robbanás és eltűnés
+            #explosion = Explosion(self.position, [bumm_img])  # bumm_img-t át kell adni valahogy
+            #explosion_group.add(explosion)
+           # self.kill()
 
 
         #kiszamitom a tavolsagot, azert hogy ne ragadjon be ha iranyt kell valtoztasson
@@ -82,7 +89,7 @@ class Enemy(pg.sprite.Sprite):
             if dist != 0:
               self.position += self.movement.normalize() * dist
             #ha ezt nem irom oda akkor kidob mert eleri a 0at
-            self.target_koordinata +=1
+            self.target_waypoint +=1
 
     def rotate(self):
         dist=self.target-self.position

@@ -1,12 +1,10 @@
-from operator import truediv
-
 import pygame as pg
-from pygame.draw_py import draw_line
 from Game.world import World
 from Game.enemy import Enemy
 import constants as c
 from Game.tower import Tower
 from Game.button import Button
+from Game.explosion import Explosion
 
 
 #inicializálom a pygamet
@@ -20,6 +18,8 @@ pg.display.set_caption("Játék")
 placing_towers=False
 selected_towers=None
 deleting_towers = False
+dragging_tower = False
+tower_preview_pos = None  # egér pozíció, ahova a tornyot mutatja
 
 ##################
 #KEPEK BETOLTESE
@@ -77,6 +77,10 @@ delete_button=pg.transform.scale(delete_button, (200, 190))
 x_img=pg.image.load('Assets/kepek/x.png').convert_alpha()
 x_img=pg.transform.scale(x_img, (100, 100))
 
+#Robbanás betöltése
+bumm_img=pg.image.load('Assets/kepek/Robbanas/Robbanas.png').convert_alpha()
+bumm_img=pg.transform.scale(bumm_img, (100, 100))
+
 #def create_tower(mouse_pos):
     #tower=Tower(tower_img,mouse_pos)
     #tower_group.add(tower)
@@ -108,6 +112,7 @@ world=World(map_image)
 #Csoportok elkészítése
 enemy_group=pg.sprite.Group()
 tower_group=pg.sprite.Group()
+#explosion_group=pg.sprite.Group()
 
 #Új ellenségek létrehozása
 SPAWN_DELAY = 2000  # 2000 ms = 2 masodperc
@@ -138,10 +143,22 @@ cancel_gomb=Button(map_rect.width+20,175,cancel_button,True)
 exit_gomb = Button(map_rect.width + 20, 300, exit_button, True)
 delete_gomb = Button(map_rect.width + 20, 450, delete_button, True)
 
+#Szöveg megjelenítése
+#Consolas
+text_font=pg.font.SysFont('Comic Sans MS', 24,bold=True)
+large_font=pg.font.SysFont('Comic Sans MS', 36)
+
+#Számok(szöveg) kiírása a képernyőre
+def draw_text(text,font,tex_color,x,y):
+    img=font.render(text,True,tex_color)
+    screen.blit(img,(x,y))
+
+
+
 running = True
 while running:
 
-    clock.tick(c.Framerates)
+    clock.tick(c.Framerates)#hány képkockát engedélyez másodpercenként
     screen.fill("grey100")
 
         #############
@@ -181,10 +198,22 @@ while running:
 
     #pg.draw.lines(screen,"grey100",False,koordinatak,2)
 
+
+    #Itt tudom kurzorral húzni majd az ágyúkat
+    if dragging_tower:
+        tower_preview_pos = pg.mouse.get_pos()
+        # Megnézem, hogy a preview kép a térképen van-e
+        if tower_preview_pos[0] < map_rect.width:
+            preview_rect = tower_img.get_rect(center=tower_preview_pos)
+            screen.blit(tower_img, preview_rect)
+
+
     #gomb kirajzolása
     if buy_gomb.draw(screen):
+        dragging_tower = True
         placing_towers=True #Leteszi a fegyvert
         deleting_towers = False
+        selected_towers = None
     if placing_towers == True:
         #Ha megnyomom a buy gombot akkor megjelenik a cancel gomb
         if cancel_gomb.draw(screen):
@@ -201,8 +230,15 @@ while running:
     #    deleting_towers = True
 
     #screen.fill((0, 0, 0)) háttér törlése
+
+#Csoportok kirajzolása
     enemy_group.draw(screen)
-   # tower_group.draw(screen)
+    #explosion_group.draw(screen)
+    # tower_group.draw(screen)
+    draw_text(str(world.health),text_font, "black", 5, 40)
+    draw_text(str(world.money),text_font, "black", 5, 80)
+
+
     for tower in tower_group:
         tower.update()
         tower.draw(screen, selected=(tower == selected_towers))
@@ -213,6 +249,7 @@ while running:
     #update groups
     enemy_group.update()
     tower_group.update()
+    #explosion_group.update()
 
     # UPDATE-ek után: lőjenek a tornyok, ha enemy van a közelben
     for tower in tower_group:
@@ -231,14 +268,22 @@ while running:
         #mouse click event
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:#bal klikk
             mouse_pos=pg.mouse.get_pos()
-            #a kurzornak a jatekban kell legyen
-            if placing_towers and mouse_pos[0]<map_rect.width and mouse_pos[1]<map_rect.height:
-                create_tower(mouse_pos )
+            if dragging_tower:
+                # csak akkor rakjuk le, ha a térképre kattintunk
+                if mouse_pos[0] < map_rect.width and mouse_pos[1] < map_rect.height:
+                    create_tower(mouse_pos)
+                    dragging_tower = False
+                    tower_preview_pos = None
+
+
+            #a kurzornak a jatekban kell legyen( nem a toolbar-ra kattintok hanem balra)
+           # if placing_towers and mouse_pos[0]<map_rect.width and mouse_pos[1]<map_rect.height:
+           #     create_tower(mouse_pos )
 
             # Ha nem vásárlás mód van, de toronyra kattintasz → TÖRLÉS
-            elif not placing_towers:
+            elif placing_towers==False:
                 for tower in tower_group:
-                    if tower.rect.collidepoint(mouse_pos):
+                    if tower.rect.collidepoint(mouse_pos):#Az egeér benne van  ea torony téglalapjában
                         if deleting_towers:
                             tower.kill()
                             selected_towers=None
@@ -251,4 +296,5 @@ while running:
     if deleting_towers:
         screen.blit(x_img, (map_rect.width + 70, 550))
     pg.display.update()
+
 pg.quit()
