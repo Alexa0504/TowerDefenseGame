@@ -1,3 +1,5 @@
+from operator import truediv
+
 import pygame as pg
 from pygame.draw_py import draw_line
 from Game.world import World
@@ -13,13 +15,16 @@ pg.init()
 clock = pg.time.Clock()
 
 pg.display.set_caption("Játék")
+
+#változók
+placing_towers=False
+selected_towers=None
+deleting_towers = False
+
 ##################
 #KEPEK BETOLTESE
 ##################
 
-
-#Uj fegyverek letevése
-placing_towers=False
 
 # Térkép betöltése
 map_image = pg.image.load('Assets/kepek/terkep.png')# a térképed útvonala
@@ -63,8 +68,14 @@ buy_button=pg.image.load('Assets/kepek/Gombok/BUYGOMB.png').convert_alpha()
 buy_button=pg.transform.scale(buy_button, (200, 190))
 cancel_button=pg.image.load('Assets/kepek/Gombok/CANCELGOMB.png').convert_alpha()
 cancel_button=pg.transform.scale(cancel_button, (200, 190))
-exit_button_img = pg.image.load('Assets/kepek/Gombok/EXITGOMB.png').convert_alpha()
-exit_button_img = pg.transform.scale(exit_button_img, (200, 190))
+exit_button = pg.image.load('Assets/kepek/Gombok/EXITGOMB.png').convert_alpha()
+exit_button = pg.transform.scale(exit_button, (200, 190))
+delete_button=pg.image.load('Assets/kepek/Gombok/DELETEGOMB.png').convert_alpha()
+delete_button=pg.transform.scale(delete_button, (200, 190))
+
+# x jel betöltése
+x_img=pg.image.load('Assets/kepek/x.png').convert_alpha()
+x_img=pg.transform.scale(x_img, (100, 100))
 
 #def create_tower(mouse_pos):
     #tower=Tower(tower_img,mouse_pos)
@@ -90,7 +101,6 @@ def create_tower(mouse_pos):
     # Ha nincs ütközés, hozzuk létre
     tower = Tower(tower_frames, mouse_pos)
     tower_group.add(tower)
-
 
 #Térkép elkészítése
 world=World(map_image)
@@ -125,7 +135,8 @@ enemy_group.add(enemy)
 #Gomb létrehozása(példányosítása) hova teszem le
 buy_gomb=Button(map_rect.width+20,50,buy_button,True)
 cancel_gomb=Button(map_rect.width+20,175,cancel_button,True)
-exit_gomb = Button(map_rect.width + 20, 300, exit_button_img, True)
+exit_gomb = Button(map_rect.width + 20, 300, exit_button, True)
+delete_gomb = Button(map_rect.width + 20, 450, delete_button, True)
 
 running = True
 while running:
@@ -173,18 +184,28 @@ while running:
     #gomb kirajzolása
     if buy_gomb.draw(screen):
         placing_towers=True #Leteszi a fegyvert
+        deleting_towers = False
     if placing_towers == True:
         #Ha megnyomom a buy gombot akkor megjelenik a cancel gomb
         if cancel_gomb.draw(screen):
             placing_towers=False
-
+            deleting_towers = False
     # Exit gomb kezelése
     if exit_gomb.draw(screen):
         running = False
 
+    if delete_gomb.draw(screen):
+        deleting_towers = not deleting_towers  # Átvált True/False között
+
+    #if delete_gomb.draw(screen):
+    #    deleting_towers = True
+
     #screen.fill((0, 0, 0)) háttér törlése
     enemy_group.draw(screen)
-    tower_group.draw(screen)
+   # tower_group.draw(screen)
+    for tower in tower_group:
+        tower.update()
+        tower.draw(screen, selected=(tower == selected_towers))
 
     ################
     #UPDATEK
@@ -198,7 +219,7 @@ while running:
         for enemy in enemy_group:
             distance = ((tower.rect.centerx - enemy.rect.centerx) ** 2 +
                         (tower.rect.centery - enemy.rect.centery) ** 2) ** 0.5
-            if distance < 100:  # 100 px-en belül van
+            if distance < tower.range:  # kisebb mint a range
                 tower.fire()
                 enemy.take_damage(5)
                 break  # csak egy enemy-re lő egyszerre
@@ -214,5 +235,20 @@ while running:
             if placing_towers and mouse_pos[0]<map_rect.width and mouse_pos[1]<map_rect.height:
                 create_tower(mouse_pos )
 
+            # Ha nem vásárlás mód van, de toronyra kattintasz → TÖRLÉS
+            elif not placing_towers:
+                for tower in tower_group:
+                    if tower.rect.collidepoint(mouse_pos):
+                        if deleting_towers:
+                            tower.kill()
+                            selected_towers=None
+                        else:
+                            selected_towers=tower
+                        break  # csak egyet törlünk, amin a kurzor van
+                else:
+                    selected_towers=None #Ha nem a toronyra kattintottál
+
+    if deleting_towers:
+        screen.blit(x_img, (map_rect.width + 70, 550))
     pg.display.update()
 pg.quit()
