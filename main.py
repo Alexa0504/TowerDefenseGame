@@ -20,6 +20,7 @@ selected_towers=None
 deleting_towers = False
 dragging_tower = False
 tower_preview_pos = None  # egér pozíció, ahova a tornyot mutatja
+game_state = "menu"
 
 ##################
 #KEPEK BETOLTESE
@@ -33,6 +34,10 @@ map_rect = map_image.get_rect()
 #Ablak betöltése
 screen = pg.display.set_mode((map_rect.width+c.Side_panel, map_rect.height))#hozzaadtam a side panelt is
 map_image = map_image.convert_alpha()
+
+#Kezdőképernyő betöltése
+start_img=pg.image.load("assets/kepek/MenuKep.png")
+start_img = pg.transform.scale(start_img, (screen.get_width(), screen.get_height()))
 
 #toolbar betoltese
 toolbar_image = pg.image.load('Assets/kepek/JobbHatter.png')  # Kép betöltése
@@ -68,10 +73,19 @@ buy_button=pg.image.load('Assets/kepek/Gombok/BUYGOMB.png').convert_alpha()
 buy_button=pg.transform.scale(buy_button, (200, 190))
 cancel_button=pg.image.load('Assets/kepek/Gombok/CANCELGOMB.png').convert_alpha()
 cancel_button=pg.transform.scale(cancel_button, (200, 190))
-exit_button = pg.image.load('Assets/kepek/Gombok/EXITGOMB.png').convert_alpha()
+exit_button = pg.image.load('Assets/kepek/Gombok/EXITGOMB2.png').convert_alpha()
 exit_button = pg.transform.scale(exit_button, (200, 190))
 delete_button=pg.image.load('Assets/kepek/Gombok/DELETEGOMB.png').convert_alpha()
 delete_button=pg.transform.scale(delete_button, (200, 190))
+start_button=pg.image.load('Assets/kepek/Gombok/STARTGOMB.png').convert_alpha()
+start_button=pg.transform.scale(start_button, (250, 250))
+#exit_gomb2 = pg.image.load('Assets/kepek/Gombok/EXITGOMB2.png').convert_alpha()
+#exit_gomb2 = pg.transform.scale(exit_button, (250, 250))
+
+
+#Pénz és életerő ikonok
+coin_img=pg.image.load('Assets/kepek/Coin.png').convert_alpha()
+heart_img=pg.image.load('Assets/kepek/Heart.png').convert_alpha()
 
 # x jel betöltése
 x_img=pg.image.load('Assets/kepek/x.png').convert_alpha()
@@ -142,6 +156,8 @@ buy_gomb=Button(map_rect.width+20,50,buy_button,True)
 cancel_gomb=Button(map_rect.width+20,175,cancel_button,True)
 exit_gomb = Button(map_rect.width + 20, 300, exit_button, True)
 delete_gomb = Button(map_rect.width + 20, 450, delete_button, True)
+start_button = Button(475, 350, start_button, True)
+#exit_gomb2=Button(475, 350, exit_gomb2, True)
 
 #Szöveg megjelenítése
 #Consolas
@@ -161,19 +177,39 @@ while running:
     clock.tick(c.Framerates)#hány képkockát engedélyez másodpercenként
     screen.fill("grey100")
 
+    if game_state == "menu":
+        screen.blit(start_img,(0,0))
+       # screen.blit(toolbar_image, (map_rect.width, 0))
+        if start_button.draw(screen):
+            game_state = "playing"
+        pg.display.update()
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                running = False
+        continue  # Tovább a következő ciklusra
+
+
         #############
         #Kirajzolás
         ##########
-    # Térkép kirajzolása
-    world.draw(screen)
+
+
+    elif game_state == "playing":
+        # Térkép kirajzolása
+        world.draw(screen)
+        # Toolbar kirajzolása
+        toolbar_rect = pg.Rect(map_rect.width, 0, c.Side_panel, map_rect.height)
+        screen.blit(toolbar_image, toolbar_rect)
 
     #Szin a toolbarnak
     #toolbar_rect = pg.Rect(map_rect.width, 0, c.Side_panel, map_rect.height)
     #pg.draw.rect(screen, (7,130,80), toolbar_rect)
 
     # Toolbar kirajzolása
-    toolbar_rect = pg.Rect(map_rect.width, 0, c.Side_panel, map_rect.height)
-    screen.blit(toolbar_image, toolbar_rect)
+   # if game_state == "game":
+      #  toolbar_rect = pg.Rect(map_rect.width, 0, c.Side_panel, map_rect.height)
+       # screen.blit(toolbar_image, toolbar_rect)
+
 
      #Sebezhetoseg
     #for event in pg.event.get():
@@ -217,6 +253,7 @@ while running:
     if placing_towers == True:
         #Ha megnyomom a buy gombot akkor megjelenik a cancel gomb
         if cancel_gomb.draw(screen):
+            dragging_tower = False
             placing_towers=False
             deleting_towers = False
     # Exit gomb kezelése
@@ -238,6 +275,9 @@ while running:
     draw_text(str(world.health),text_font, "black", 5, 40)
     draw_text(str(world.money),text_font, "black", 5, 80)
 
+#Pénz és életerő ikonok megjelenítése
+    screen.blit(heart_img, (10, 40 + 20))
+    screen.blit(coin_img, (10, 80 + 20))
 
     for tower in tower_group:
         tower.update()
@@ -271,7 +311,11 @@ while running:
             if dragging_tower:
                 # csak akkor rakjuk le, ha a térképre kattintunk
                 if mouse_pos[0] < map_rect.width and mouse_pos[1] < map_rect.height:
-                    create_tower(mouse_pos)
+                    if world.money > c.BUY_COST:
+                        create_tower(mouse_pos)
+                        world.money -= c.BUY_COST
+                    else:
+                        print("Nincs elég pénzed")
                     dragging_tower = False
                     tower_preview_pos = None
 
