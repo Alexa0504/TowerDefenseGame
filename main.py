@@ -81,6 +81,8 @@ start_button=pg.image.load('Assets/kepek/Gombok/STARTGOMB.png').convert_alpha()
 start_button=pg.transform.scale(start_button, (250, 250))
 #exit_gomb2 = pg.image.load('Assets/kepek/Gombok/EXITGOMB2.png').convert_alpha()
 #exit_gomb2 = pg.transform.scale(exit_button, (250, 250))
+exit_button2 = pg.image.load('Assets/kepek/Gombok/EXITGOMB2.png').convert_alpha()
+exit_button2 = pg.transform.scale(exit_button2, (250,250))
 
 
 #Pénz és életerő ikonok
@@ -152,11 +154,13 @@ enemy = Enemy(koordinatak, enemy_img1, enemy_img2)
 enemy_group.add(enemy)
 
 #Gomb létrehozása(példányosítása) hova teszem le
-buy_gomb=Button(map_rect.width+20,50,buy_button,True)
-cancel_gomb=Button(map_rect.width+20,175,cancel_button,True)
-exit_gomb = Button(map_rect.width + 20, 300, exit_button, True)
-delete_gomb = Button(map_rect.width + 20, 450, delete_button, True)
-start_button = Button(475, 350, start_button, True)
+buy_buttonn=Button(map_rect.width + 20, 50, buy_button, True)
+cancel_buttonn=Button(map_rect.width + 20, 175, cancel_button, True)
+exit_buttonn = Button(map_rect.width + 20, 300, exit_button, True)
+delete_buttonn = Button(map_rect.width + 20, 450, delete_button, True)
+start_button = Button(475, 150, start_button, True)
+exit_button2 = Button(475,275, exit_button2, True)
+
 #exit_gomb2=Button(475, 350, exit_gomb2, True)
 
 #Szöveg megjelenítése
@@ -182,6 +186,8 @@ while running:
        # screen.blit(toolbar_image, (map_rect.width, 0))
         if start_button.draw(screen):
             game_state = "playing"
+        if exit_button2.draw(screen):
+            running = False
         pg.display.update()
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -245,22 +251,22 @@ while running:
 
 
     #gomb kirajzolása
-    if buy_gomb.draw(screen):
+    if buy_buttonn.draw(screen):
         dragging_tower = True
         placing_towers=True #Leteszi a fegyvert
         deleting_towers = False
         selected_towers = None
     if placing_towers == True:
         #Ha megnyomom a buy gombot akkor megjelenik a cancel gomb
-        if cancel_gomb.draw(screen):
+        if cancel_buttonn.draw(screen):
             dragging_tower = False
             placing_towers=False
             deleting_towers = False
     # Exit gomb kezelése
-    if exit_gomb.draw(screen):
+    if exit_buttonn.draw(screen):
         running = False
 
-    if delete_gomb.draw(screen):
+    if delete_buttonn.draw(screen):
         deleting_towers = not deleting_towers  # Átvált True/False között
 
     #if delete_gomb.draw(screen):
