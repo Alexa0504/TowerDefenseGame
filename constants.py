@@ -8,3 +8,9 @@ MONEY=250
 
 BUY_COST=200
 UPGRADE_COST=100
+
+
+#Gombok távolsága egymástól
+button_height = 130
+padding = 5
+start_y = 40 # első gomb teteje
