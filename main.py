@@ -63,11 +63,6 @@ tower_img = pg.transform.scale(tower_img, (100, 100))
 # Térkép betöltése (Ahol fehér)
 feherTerkep = pg.image.load('Assets/kepek/terkepfeher.png').convert_alpha()
 
-# Toolbar kép betöltése
-# toolbar= pg.image.load("Assets/kepek/toolbar2.png").convert_alpha()
-# Átméretezzük, hogy pontosan kitöltse a jobb oldali sávot
-# toolbar = pg.transform.scale(toolbar, (c.Side_panel, map_rect.height))
-
 # Gombok betöltése és átméretezése
 buy_button_img = pg.image.load('Assets/kepek/Gombok/BUYGOMB.png').convert_alpha()
 buy_button_img = pg.transform.scale(buy_button_img, (200, 190))
@@ -81,8 +76,6 @@ delete_button_red_img = pg.image.load('Assets/kepek/Gombok/DELETEGOMBPIROS.png')
 delete_button_red_img = pg.transform.scale(delete_button_red_img, (200, 190))
 start_button_img = pg.image.load('Assets/kepek/Gombok/STARTGOMB.png').convert_alpha()
 start_button_img = pg.transform.scale(start_button_img, (250, 250))
-# exit_gomb2 = pg.image.load('Assets/kepek/Gombok/EXITGOMB2.png').convert_alpha()
-# exit_gomb2 = pg.transform.scale(exit_button, (250, 250))
 exit_button2_img = pg.image.load('Assets/kepek/Gombok/EXITGOMB2.png').convert_alpha()
 exit_button2_img = pg.transform.scale(exit_button2_img, (250, 250))
 pause_button_img = pg.image.load('Assets/kepek/Gombok/PAUSEGOMB.png').convert_alpha()
@@ -98,15 +91,10 @@ heart_img = pg.image.load('Assets/kepek/Heart.png').convert_alpha()
 # x_img=pg.image.load('Assets/kepek/x.png').convert_alpha()
 # x_img=pg.transform.scale(x_img, (100, 100))
 
-
 # Robbanás betöltése
 bumm_img = pg.image.load('Assets/kepek/Robbanas/Robbanas.png').convert_alpha()
 bumm_img = pg.transform.scale(bumm_img, (100, 100))
 
-
-# def create_tower(mouse_pos):
-# tower=Tower(tower_img,mouse_pos)
-# tower_group.add(tower)
 
 # Hova lehet és hova nem lehet pakolni fegyvert
 def create_tower(mouse_pos):
@@ -136,7 +124,6 @@ world = World(map_image)
 # Csoportok elkészítése
 enemy_group = pg.sprite.Group()
 tower_group = pg.sprite.Group()
-# explosion_group=pg.sprite.Group()
 
 # Új ellenségek létrehozása
 SPAWN_DELAY = 2000  # 2000 ms = 2 masodperc
@@ -161,19 +148,19 @@ enemy = Enemy(koordinatak, enemy_img1, enemy_img2)
 enemy_group.add(enemy)
 
 # Gomb létrehozása(példányosítása) hova teszem le
+# Mennyivel kell lejjebb helyezni a következő gombot
 buy_button = Button(map_rect.width + 20, c.start_y + 0 * (c.button_height + c.padding), buy_button_img, True)
 cancel_button = Button(map_rect.width + 20, c.start_y + 1 * (c.button_height + c.padding), cancel_button_img, True)
 delete_button = Button(map_rect.width + 20, c.start_y + 2 * (c.button_height + c.padding), delete_button_img, True)
 pause_button = Button(map_rect.width + 20, c.start_y + 3 * (c.button_height + c.padding), pause_button_img, True)
 resume_button = Button(map_rect.width + 20, c.start_y + 4 * (c.button_height + c.padding), resume_button_img, True)
 exit_button = Button(map_rect.width + 20, c.start_y + 5 * (c.button_height + c.padding), exit_button_img, True)
-start_button = Button(475, 150, start_button_img, True)  # Use the renamed variable
-exit_button2 = Button(475, 275, exit_button2_img, True)  # Use the renamed variable
+start_button = Button(475, 150, start_button_img, True)
+exit_button2 = Button(475, 275, exit_button2_img, True)
 
 # exit_gomb2=Button(475, 350, exit_gomb2, True)
 
 # Szöveg megjelenítése
-# Consolas
 text_font = pg.font.SysFont('Comic Sans MS', 24, bold=True)
 large_font = pg.font.SysFont('Comic Sans MS', 36)
 
@@ -183,11 +170,12 @@ def draw_text(text, font, tex_color, x, y):
     img = font.render(text, True, tex_color)
     screen.blit(img, (x, y))
 
+
 def game_reset():
     global world, enemy_group, tower_group, last_spawn_time
     global placing_towers, selected_towers, deleting_towers, dragging_tower, tower_preview_pos
 
-    world=World(map_image)
+    world = World(map_image)
     enemy_group.empty()
     tower_group.empty()
     last_spawn_time = pg.time.get_ticks()
@@ -198,6 +186,9 @@ def game_reset():
     deleting_towers = False
     dragging_tower = False
     tower_preview_pos = None
+    # Reseteld a gomb képét is
+    delete_button.image = delete_button_img
+
 
 running = True
 while running:
@@ -210,47 +201,101 @@ while running:
         if event.type == pg.QUIT:
             running = False
 
-        # Mouse click events
-        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:  # Ez a bal klikkért felelős
-            mouse_pos = pg.mouse.get_pos()
-
-            if game_state == "menu":
-                if start_button.draw(screen):
+        if game_state == "menu":
+            # egérkattintás a menüben
+            if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+                mouse_pos = event.pos
+                if start_button.rect.collidepoint(mouse_pos):
                     game_state = "playing"
-                if exit_button2.draw(screen):
+                if exit_button2.rect.collidepoint(mouse_pos):
                     running = False
-            elif game_state == "playing":
-                if dragging_tower:
-                    # Csak a térképre lehet tenni fegyvert
-                    if mouse_pos[0] < map_rect.width and mouse_pos[1] < map_rect.height:
-                        if world.money > c.BUY_COST:
-                            create_tower(mouse_pos)
-                            world.money -= c.BUY_COST
-                        else:
-                            print("Nincs elég pénzed")
-                        dragging_tower = False
-                        tower_preview_pos = None#Éppen nem húzok tornyot
-                elif placing_towers == False:
-                    for tower in tower_group:
-                        if tower.rect.collidepoint(mouse_pos):#Az egér benne van a torony téglalapjában
-                            if deleting_towers:
-                                if delete_button_red_img.draw(screen):
-                                    deleting_towers=False
-                                else:
-                                    if delete_button.draw(screen):
-                                        deleting_towers = True
-                                    else:
-                                        selected_towers = tower
-                                    break# csak egyet törlünk, amin a kurzor van
-                            else:
-                                selected_towers = None#Ha nem a toronyra kattintottál
 
+        elif game_state == "playing":
+            # billentyűzet eseménykezelés
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_d:  # 'D' billentyű a törlésre
+                    deleting_towers = not deleting_towers
+                    placing_towers = False
+                    dragging_tower = False
+                    selected_towers = None
                     if deleting_towers:
-                        if delete_button_red_img.draw(screen):
-                             deleting_towers = False  # Kikapcsolás, ha újra rákattintanak
-                        else:
-                            if delete_button.draw(screen):
-                                 deleting_towers = True
+                        delete_button.image = delete_button_red_img
+                    else:
+                        delete_button.image = delete_button_img
+                elif event.key == pg.K_b:  # 'B' billentyű a vásárlásra
+                    placing_towers = True
+                    dragging_tower = True
+                    deleting_towers = False
+                    selected_towers = None
+                    delete_button.image = delete_button_img
+
+            # egérkattintás eseménykezelése
+            if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+                mouse_pos = event.pos
+
+                # gombok kezelése
+                if delete_button.rect.collidepoint(mouse_pos):
+                    deleting_towers = not deleting_towers
+                    placing_towers = False
+                    dragging_tower = False
+                    selected_towers = None
+                    if deleting_towers:
+                        delete_button.image = delete_button_red_img
+                    else:
+                        delete_button.image = delete_button_img
+                elif buy_button.rect.collidepoint(mouse_pos):
+                    dragging_tower = True
+                    placing_towers = True
+                    deleting_towers = False
+                    selected_towers = None
+                    delete_button.image = delete_button_img  # A buy gomb kikapcsolja a delete módot
+                elif cancel_button.rect.collidepoint(mouse_pos):
+                    dragging_tower = False
+                    placing_towers = False
+                    deleting_towers = False
+                    selected_towers = None
+                elif exit_button.rect.collidepoint(mouse_pos):
+                    game_state = "menu"
+                    game_reset()
+                elif pause_button.rect.collidepoint(mouse_pos):
+                    game_state = "paused"
+
+                # torony elhelyezése
+                elif dragging_tower and mouse_pos[0] < map_rect.width and mouse_pos[1] < map_rect.height:
+                    if world.money >= c.BUY_COST:
+                        create_tower(mouse_pos)
+                        world.money -= c.BUY_COST
+                    else:
+                        print("Nincs elég pénzed")
+                    dragging_tower = False
+                    placing_towers = False
+                    tower_preview_pos = None  # Éppen nem húzok tornyot
+
+                # torony kijelölése vagy törlése
+                elif mouse_pos[0] < map_rect.width and not dragging_tower:
+                    clicked_on_tower = False
+                    for tower in tower_group:
+                        if tower.rect.collidepoint(mouse_pos):
+                            clicked_on_tower = True
+                            if deleting_towers:
+                                tower.kill()
+                                selected_towers = None
+                                deleting_towers = False
+                                delete_button.image = delete_button_img  # Törlés után visszaáll a gomb képe
+                            else:
+                                selected_towers = tower
+                            break
+                    if not clicked_on_tower:
+                        selected_towers = None
+
+        elif game_state == "paused":
+            # egérkattintás a szünet képernyőn
+            if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+                mouse_pos = event.pos
+                if resume_button.rect.collidepoint(mouse_pos):
+                    game_state = "playing"
+                if exit_button.rect.collidepoint(mouse_pos):
+                    running = False
 
     # A játék kirajzolása és frissítése
     if game_state == "menu":
@@ -262,20 +307,23 @@ while running:
         enemy_group.update()
         tower_group.update()
 
-        # Térkép kirajzolása
+        # térkép és toolbar kirajzolása
         world.draw(screen)
-        # Toolbar kirajzolása
         toolbar_rect = pg.Rect(map_rect.width, 0, c.Side_panel, map_rect.height)
         screen.blit(toolbar_image, toolbar_rect)
 
-        # Új enemy spawnolása idő alapján
+        # Törlés mód szöveg kiírása
+        if deleting_towers:
+            draw_text("Törlés mód aktív!", text_font, (255, 0, 0), map_rect.width + 10, c.start_y - 40)
+
+        # új ellenség spawnolása idő alapján
         current_time = pg.time.get_ticks()
         if current_time - last_spawn_time > SPAWN_DELAY:
             enemy = Enemy(koordinatak, enemy_img1, enemy_img2)
             enemy_group.add(enemy)
             last_spawn_time = current_time
 
-        #Itt tudom kurzorral húzni majd az ágyúkat
+        # torony húzása a kurzorral
         if dragging_tower:
             tower_preview_pos = pg.mouse.get_pos()
             # Megnézem, hogy a preview kép a térképen van-e
@@ -283,56 +331,30 @@ while running:
                 preview_rect = tower_img.get_rect(center=tower_preview_pos)
                 screen.blit(tower_img, preview_rect)
 
-        # Gombok kirajolása és működése
-        if buy_button.draw(screen):
-            dragging_tower = True
-            placing_towers = True
-            deleting_towers = False
-            selected_towers = None
-        if placing_towers:
-            if cancel_button.draw(screen):
-                dragging_tower = False
-                placing_towers = False
-                deleting_towers = False
+        # gombok kirajzolása
+        buy_button.draw(screen)
+        if placing_towers:  # csak akkor rajzolja ki a cancel gombot, ha tornyot helyezel el
+            cancel_button.draw(screen)
 
-        # Átvált törlési és nem törlési mód között
-        if deleting_towers:
-            if delete_button_red_img.draw(screen):
-                deleting_towers = False
-        else:
-            if delete_button.draw(screen):
-                deleting_towers = True
+        delete_button.draw(screen)
+        pause_button.draw(screen)
+        exit_button.draw(screen)
 
-        if exit_button.draw(screen):
-            game_state="menu"
-            game_reset()
-
-           # running = False
-
-        if pause_button.draw(screen):
-            game_state = "paused"
-            # enemy_group.empty()
-            # tower_group.empty()
-
-        ######################
-        #Csoportok kirajzolása
-        #######################
-
+        # csoportok kirajzolása
         enemy_group.draw(screen)
         draw_text(str(world.health), text_font, "black", 5, 40)
         draw_text(str(world.money), text_font, "black", 5, 80)
 
-        # DPénz és szív okonok kirajzolása
+        # Pénz és szív ikonok kirajzolása
         screen.blit(heart_img, (10, 40 + 20))
         screen.blit(coin_img, (10, 80 + 20))
 
-        #távolsag a középpontok között
+        # távolsag a középpontok között, tornyok frissítése és lövése
         for tower in tower_group:
             tower.update()
             tower.draw(screen, selected=(tower == selected_towers))
             for enemy in enemy_group:
-                # Megnézi hogy a torony túl közel van e egy már meglévőhöz
-                #A torony és az ellenség középpontja közötti távolság
+                # A torony és az ellenség középpontja közötti távolság
                 distance = ((tower.rect.centerx - enemy.rect.centerx) ** 2 +
                             (tower.rect.centery - enemy.rect.centery) ** 2) ** 0.5
                 if distance < tower.range:
@@ -343,10 +365,8 @@ while running:
     elif game_state == "paused":
         screen.fill("grey50")
         draw_text("PAUSED", large_font, "white", screen.get_width() / 2 - 80, screen.get_height() / 2 - 50)
-        if resume_button.draw(screen):
-            game_state = "playing"
-        if exit_button.draw(screen):
-            running = False
+        resume_button.draw(screen)
+        exit_button.draw(screen)
 
     pg.display.update()
 
