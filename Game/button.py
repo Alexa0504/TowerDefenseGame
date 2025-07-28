@@ -3,10 +3,13 @@ import pygame as pg
 class Button:
     def __init__(self, x, y, image,single_click):
         self.image = image
+        #self.image_down = image_down  # Ez az új, lenyomott állapot
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
         self.clicked=False
         self.single_click=single_click
+       # self.enabled = enabled
+        #self.is_clicked = False
 
 
     def draw(self,surface):
@@ -17,6 +20,7 @@ class Button:
         pos=pg.mouse.get_pos()
         if self.rect.collidepoint(pos):
             if pg.mouse.get_pressed()[0]==1 and self.clicked == False:#csak bal klikk a 0
+                #self.is_clicked = True
                 action=True #ha kattintok akkor igazza valik
                 #ha egszer lehet kattintani a gombra
                 if self.single_click:
@@ -27,6 +31,10 @@ class Button:
 
         #kirajzolom a gombot a screenre
         surface.blit(self.image,self.rect)
+       # if self.is_clicked:
+        #    surface.blit(self.image_down, (self.rect.x, self.rect.y))
+        #else:
+         #   surface.blit(self.image, (self.rect.x, self.rect.y))
 
         return action
 
