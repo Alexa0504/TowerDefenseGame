@@ -4,7 +4,6 @@ from Game.enemy import Enemy
 import constants as c
 from Game.tower import Tower
 from Game.button import Button
-from Game.explosion import Explosion
 
 # inicializálom a pygamet
 pg.init()
@@ -82,13 +81,13 @@ delete_button_img = pg.transform.scale(delete_button_img, (200, 190))
 delete_button_red_img = pg.image.load('Assets/kepek/Gombok/DELETEGOMBPIROS.png').convert_alpha()
 delete_button_red_img = pg.transform.scale(delete_button_red_img, (200, 190))
 start_button_img = pg.image.load('Assets/kepek/Gombok/STARTGOMB.png').convert_alpha()
-start_button_img = pg.transform.scale(start_button_img, (250, 250))
+start_button_img = pg.transform.scale(start_button_img, (200, 190))
 start_button_img_2=pg.image.load('Assets/kepek/Gombok/STARTGOMBKlikk.png').convert_alpha()
-start_button_img_2=pg.transform.scale(start_button_img_2, (250, 250))
-exit_button2_img = pg.image.load('Assets/kepek/Gombok/EXITGOMB2.png').convert_alpha()
-exit_button2_img = pg.transform.scale(exit_button2_img, (250, 250))
-exit_button2_img_2=pg.image.load('Assets/kepek/Gombok/EXITGOMB2Klikk.png').convert_alpha()
-exit_button2_img_2=pg.transform.scale(exit_button2_img_2, (200, 190))
+start_button_img_2=pg.transform.scale(start_button_img_2, (200, 190))
+exit_button_menu_img = pg.image.load('Assets/kepek/Gombok/EXITGOMB2.png').convert_alpha()
+exit_button_menu_img = pg.transform.scale(exit_button_menu_img, (200, 190))
+exit_button_menu_img_2=pg.image.load('Assets/kepek/Gombok/EXITGOMB2Klikk.png').convert_alpha()
+exit_button_menu_img_2=pg.transform.scale(exit_button_menu_img_2, (200, 190))
 pause_button_img = pg.image.load('Assets/kepek/Gombok/PAUSEGOMB.png').convert_alpha()
 pause_button_img = pg.transform.scale(pause_button_img, (200, 190))
 pause_button_img_2=pg.image.load('Assets/kepek/Gombok/PAUSEGOMBKlikk.png').convert_alpha()
@@ -107,6 +106,7 @@ heart_img = pg.image.load('Assets/kepek/Heart.png').convert_alpha()
 # x_img=pg.transform.scale(x_img, (100, 100))
 
 # Robbanás betöltése
+
 bumm_img = pg.image.load('Assets/kepek/Robbanas/Robbanas.png').convert_alpha()
 bumm_img = pg.transform.scale(bumm_img, (100, 100))
 
@@ -164,23 +164,16 @@ enemy_group.add(enemy)
 
 # Gomb létrehozása(példányosítása) hova teszem le
 # Mennyivel kell lejjebb helyezni a következő gombot
-buy_button = Button(map_rect.width + 20, c.start_y + 0 * (c.button_height + c.padding), buy_button_img, True)
-buy_button_2=Button(map_rect.width + 20, c.start_y + 0 * (c.button_height + c.padding), buy_button_img, True)
-cancel_button = Button(map_rect.width + 20, c.start_y + 1 * (c.button_height + c.padding), cancel_button_img, True)
-cancel_button_2=Button(map_rect.width + 20, c.start_y + 1 * (c.button_height + c.padding), cancel_button_img, True)
-delete_button = Button(map_rect.width + 20, c.start_y + 2 * (c.button_height + c.padding), delete_button_img, True)
-pause_button = Button(map_rect.width + 20, c.start_y + 3 * (c.button_height + c.padding), pause_button_img, True)
-pause_button_2=Button(map_rect.width + 20, c.start_y + 3 * (c.button_height + c.padding), pause_button_img, True)
-resume_button = Button(map_rect.width + 20, c.start_y + 4 * (c.button_height + c.padding), resume_button_img, True)
-resume_button_2=Button(map_rect.width + 20, c.start_y + 4 * (c.button_height + c.padding), resume_button_img, True)
-exit_button = Button(map_rect.width + 20, c.start_y + 5 * (c.button_height + c.padding), exit_button_img, True)
-exit_button_2=Button(map_rect.width + 20, c.start_y + 5 * (c.button_height + c.padding), exit_button_img, True)
-start_button = Button(475, 150, start_button_img, True)
-start_button_2=Button(475, 150, start_button_img, True)
-exit_button2 = Button(475, 275, exit_button2_img, True)
-exit_button2_2=Button(475, 275, exit_button2_img, True)
+buy_button = Button(map_rect.width + 20, c.start_y + 0 * (c.button_height + c.padding), buy_button_img, buy_button_img_2)
+cancel_button = Button(map_rect.width + 20, c.start_y + 1 * (c.button_height + c.padding), cancel_button_img, cancel_button_img_2)
+delete_button = Button(map_rect.width + 20, c.start_y + 2 * (c.button_height + c.padding), delete_button_img, delete_button_red_img)
+pause_button = Button(map_rect.width + 20, c.start_y + 3 * (c.button_height + c.padding), pause_button_img, pause_button_img_2)
+resume_button = Button(map_rect.width + 20, c.start_y + 4 * (c.button_height + c.padding), resume_button_img, resume_button_img_2)
+exit_button = Button(map_rect.width + 20, c.start_y + 5 * (c.button_height + c.padding), exit_button_img, exit_button_menu_img_2)
+start_button = Button(475, 150, start_button_img, start_button_img_2)
+exit_button_menu = Button(475, 275, exit_button_menu_img, exit_button_menu_img_2)
 
-# exit_gomb2=Button(475, 350, exit_gomb2, True)
+# exit_gomb_menu=Button(475, 350, exit_gomb_menu_img_2, True)
 
 # Szöveg megjelenítése
 text_font = pg.font.SysFont('Comic Sans MS', 24, bold=True)
@@ -229,7 +222,7 @@ while running:
                 mouse_pos = event.pos
                 if start_button.rect.collidepoint(mouse_pos):
                     game_state = "playing"
-                if exit_button2.rect.collidepoint(mouse_pos):
+                if exit_button_menu.rect.collidepoint(mouse_pos):
                     running = False
 
         elif game_state == "playing":
@@ -323,7 +316,7 @@ while running:
     if game_state == "menu":
         screen.blit(start_img, (0, 0))
         start_button.draw(screen)
-        exit_button2.draw(screen)
+        exit_button_menu.draw(screen)
 
     elif game_state == "playing":
         enemy_group.update()

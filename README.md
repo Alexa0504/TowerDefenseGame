@@ -2,6 +2,8 @@
 
 A Tower Defense game where the goal is to defend your base from enemy attacks.
 
+![Gameplay Screenshot](Assets/kepek/ReadmeKep.png)
+
 ## Installation
 
 To run the game, you need the **Pygame** library. You can install it with the following command:
