@@ -4,6 +4,7 @@ from Game.enemy import Enemy
 import constants as c
 from Game.tower import Tower
 from Game.button import Button
+from Game.enemy_boat import Enemy_boat
 
 # inicializálom a pygamet
 pg.init()
@@ -20,7 +21,6 @@ dragging_tower = False
 tower_preview_pos = None  # egér pozíció, ahova a tornyot mutatja
 selected_button=None
 game_state = "menu"
-# is_paused = False
 
 ##################
 # KEPEK BETOLTESE
@@ -44,8 +44,11 @@ toolbar_image = pg.image.load('Assets/kepek/JobbHatter.png')  # Kép betöltése
 toolbar_image = pg.transform.scale(toolbar_image, (c.Side_panel, map_rect.height))  # Méretezés
 
 # Ellenség betöltése
-enemy_img1 = pg.image.load('Assets/kepek/Enemy/piroshal.png').convert_alpha()  # Első kép
-enemy_img2 = pg.image.load('Assets/kepek/Enemy/kekhal.png').convert_alpha()  # Második kép
+enemy_fish_img1 = pg.image.load('Assets/kepek/Enemy/piroshal.png').convert_alpha()  # Első kép
+enemy_fish_img2 = pg.image.load('Assets/kepek/Enemy/kekhal.png').convert_alpha()  # Második kép
+
+enemy_boat_img=pg.image.load('Assets/kepek/Enemy/Hajo.png').convert_alpha()
+enemy_boat_img=pg.transform.scale(enemy_boat_img,(100,100))
 
 
 # A fegyver animaciojanak betoltese
@@ -95,7 +98,7 @@ heart_img = pg.image.load('Assets/kepek/Heart.png').convert_alpha()
 # Robbanás betöltése
 
 bumm_img = pg.image.load('Assets/kepek/Robbanas/Robbanas.png').convert_alpha()
-bumm_img = pg.transform.scale(bumm_img, (100, 100))
+bumm_img = pg.transform.scale(bumm_img, (75, 75))
 
 
 # Hova lehet és hova nem lehet pakolni fegyvert
@@ -146,8 +149,10 @@ koordinatak = [
 ]
 
 # Ellenség létrehozásakor mindkét képet átadjuk
-enemy = Enemy(koordinatak, enemy_img1, enemy_img2)
+enemy = Enemy(koordinatak, enemy_fish_img1, enemy_fish_img2)
+enemy_boat=Enemy_boat(koordinatak,enemy_boat_img)
 enemy_group.add(enemy)
+enemy_group.add(enemy_boat)
 
 # Gomb létrehozása(példányosítása) hova teszem le
 # Mennyivel kell lejjebb helyezni a következő gombot
@@ -181,14 +186,15 @@ def game_reset():
     enemy_group.empty()
     tower_group.empty()
     last_spawn_time = pg.time.get_ticks()
-    enemy = Enemy(koordinatak, enemy_img1, enemy_img2)
-    enemy_group.add(enemy)
+    enemy = Enemy(koordinatak, enemy_fish_img1, enemy_fish_img2)
+    enemy_boat=Enemy_boat(koordinatak,enemy_boat_img)
+    enemy_group.add(enemy,enemy_boat)
     placing_towers = False
     selected_towers = None
     deleting_towers = False
     dragging_tower = False
     tower_preview_pos = None
-    # Reseteld a gomb képét is
+    # Frissíteni a delete gombot is
     delete_button.image = delete_button_img
 
 
@@ -321,8 +327,9 @@ while running:
         # új ellenség spawnolása idő alapján
         current_time = pg.time.get_ticks()
         if current_time - last_spawn_time > SPAWN_DELAY:
-            enemy = Enemy(koordinatak, enemy_img1, enemy_img2)
-            enemy_group.add(enemy)
+            enemy = Enemy(koordinatak, enemy_fish_img1, enemy_fish_img2)
+            enemy_boat=Enemy_boat(koordinatak,enemy_boat_img)
+            enemy_group.add(enemy,enemy_boat)
             last_spawn_time = current_time
 
         # torony húzása a kurzorral
