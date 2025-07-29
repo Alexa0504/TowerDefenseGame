@@ -19,7 +19,7 @@ selected_towers = None
 deleting_towers = False
 dragging_tower = False
 tower_preview_pos = None  # egér pozíció, ahova a tornyot mutatja
-selected_button=None
+selected_button = None
 game_state = "menu"
 
 ##################
@@ -47,9 +47,8 @@ toolbar_image = pg.transform.scale(toolbar_image, (c.Side_panel, map_rect.height
 enemy_fish_img1 = pg.image.load('Assets/kepek/Enemy/piroshal.png').convert_alpha()  # Első kép
 enemy_fish_img2 = pg.image.load('Assets/kepek/Enemy/kekhal.png').convert_alpha()  # Második kép
 
-enemy_boat_img=pg.image.load('Assets/kepek/Enemy/Hajo.png').convert_alpha()
-enemy_boat_img=pg.transform.scale(enemy_boat_img,(100,100))
-
+enemy_boat_img = pg.image.load('Assets/kepek/Enemy/Hajo.png').convert_alpha()
+enemy_boat_img = pg.transform.scale(enemy_boat_img, (100, 100))
 
 # A fegyver animaciojanak betoltese
 tower_frames = [
@@ -150,20 +149,20 @@ koordinatak = [
 
 # Ellenség létrehozásakor mindkét képet átadjuk
 enemy = Enemy(koordinatak, enemy_fish_img1, enemy_fish_img2)
-enemy_boat=Enemy_boat(koordinatak,enemy_boat_img)
+enemy_boat = Enemy_boat(koordinatak, enemy_boat_img)
 enemy_group.add(enemy)
 enemy_group.add(enemy_boat)
 
 # Gomb létrehozása(példányosítása) hova teszem le
 # Mennyivel kell lejjebb helyezni a következő gombot
-buy_button = Button(map_rect.width + 20, c.start_y + 0 * (c.button_height + c.padding), buy_button_img,True)
-cancel_button = Button(map_rect.width + 20, c.start_y + 1 * (c.button_height + c.padding), cancel_button_img,True)
-delete_button = Button(map_rect.width + 20, c.start_y + 2 * (c.button_height + c.padding), delete_button_img,True)
-pause_button = Button(map_rect.width + 20, c.start_y + 3 * (c.button_height + c.padding), pause_button_img,True)
-resume_button = Button(map_rect.width + 20, c.start_y + 4 * (c.button_height + c.padding), resume_button_img,True)
-exit_button = Button(map_rect.width + 20, c.start_y + 5 * (c.button_height + c.padding), exit_button_img,True)
-start_button = Button(475, 150, start_button_img,True)
-exit_button_menu = Button(475, 275, exit_button_menu_img,True)
+buy_button = Button(map_rect.width + 20, c.start_y + 0 * (c.button_height + c.padding), buy_button_img, True)
+cancel_button = Button(map_rect.width + 20, c.start_y + 1 * (c.button_height + c.padding), cancel_button_img, True)
+delete_button = Button(map_rect.width + 20, c.start_y + 2 * (c.button_height + c.padding), delete_button_img, True)
+pause_button = Button(map_rect.width + 20, c.start_y + 3 * (c.button_height + c.padding), pause_button_img, True)
+resume_button = Button(map_rect.width + 20, c.start_y + 4 * (c.button_height + c.padding), resume_button_img, True)
+exit_button = Button(map_rect.width + 20, c.start_y + 5 * (c.button_height + c.padding), exit_button_img, True)
+start_button = Button(500, 150, start_button_img, True)
+exit_button_menu = Button(500, 275, exit_button_menu_img, True)
 
 # exit_gomb_menu=Button(475, 350, exit_gomb_menu_img_2, True)
 
@@ -187,8 +186,8 @@ def game_reset():
     tower_group.empty()
     last_spawn_time = pg.time.get_ticks()
     enemy = Enemy(koordinatak, enemy_fish_img1, enemy_fish_img2)
-    enemy_boat=Enemy_boat(koordinatak,enemy_boat_img)
-    enemy_group.add(enemy,enemy_boat)
+    enemy_boat = Enemy_boat(koordinatak, enemy_boat_img)
+    enemy_group.add(enemy, enemy_boat)
     placing_towers = False
     selected_towers = None
     deleting_towers = False
@@ -328,8 +327,8 @@ while running:
         current_time = pg.time.get_ticks()
         if current_time - last_spawn_time > SPAWN_DELAY:
             enemy = Enemy(koordinatak, enemy_fish_img1, enemy_fish_img2)
-            enemy_boat=Enemy_boat(koordinatak,enemy_boat_img)
-            enemy_group.add(enemy,enemy_boat)
+            enemy_boat = Enemy_boat(koordinatak, enemy_boat_img)
+            enemy_group.add(enemy, enemy_boat)
             last_spawn_time = current_time
 
         # torony húzása a kurzorral
