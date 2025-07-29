@@ -47,6 +47,7 @@ toolbar_image = pg.transform.scale(toolbar_image, (c.Side_panel, map_rect.height
 enemy_img1 = pg.image.load('Assets/kepek/Enemy/piroshal.png').convert_alpha()  # Első kép
 enemy_img2 = pg.image.load('Assets/kepek/Enemy/kekhal.png').convert_alpha()  # Második kép
 
+
 # A fegyver animaciojanak betoltese
 tower_frames = [
     pg.image.load('Assets/kepek/Lovo/ujLovo.png').convert_alpha(),
@@ -66,36 +67,22 @@ feherTerkep = pg.image.load('Assets/kepek/terkepfeher.png').convert_alpha()
 # Gombok betöltése és átméretezése
 buy_button_img = pg.image.load('Assets/kepek/Gombok/BUYGOMB.png').convert_alpha()
 buy_button_img = pg.transform.scale(buy_button_img, (200, 190))
-buy_button_img_2=pg.image.load('Assets/kepek/Gombok/BuyGombKlikk.png').convert_alpha()
-buy_button_img_2=pg.transform.scale(buy_button_img_2, (200, 190))
 cancel_button_img = pg.image.load('Assets/kepek/Gombok/CANCELGOMB.png').convert_alpha()
 cancel_button_img = pg.transform.scale(cancel_button_img, (200, 190))
-cancel_button_img_2=pg.image.load('Assets/kepek/Gombok/CancelGombKlikk.png').convert_alpha()
-cancel_button_img_2=pg.transform.scale(cancel_button_img_2, (200, 190))
 exit_button_img = pg.image.load('Assets/kepek/Gombok/EXITGOMB2.png').convert_alpha()
 exit_button_img = pg.transform.scale(exit_button_img, (200, 190))
-exit_button_img_2=pg.image.load('Assets/kepek/Gombok/EXITGOMB2Klikk.png').convert_alpha()
-exit_button_img_2=pg.transform.scale(exit_button_img_2, (200, 190))
 delete_button_img = pg.image.load('Assets/kepek/Gombok/DELETEGOMB.png').convert_alpha()
 delete_button_img = pg.transform.scale(delete_button_img, (200, 190))
 delete_button_red_img = pg.image.load('Assets/kepek/Gombok/DELETEGOMBPIROS.png').convert_alpha()
 delete_button_red_img = pg.transform.scale(delete_button_red_img, (200, 190))
 start_button_img = pg.image.load('Assets/kepek/Gombok/STARTGOMB.png').convert_alpha()
 start_button_img = pg.transform.scale(start_button_img, (200, 190))
-start_button_img_2=pg.image.load('Assets/kepek/Gombok/STARTGOMBKlikk.png').convert_alpha()
-start_button_img_2=pg.transform.scale(start_button_img_2, (200, 190))
 exit_button_menu_img = pg.image.load('Assets/kepek/Gombok/EXITGOMB2.png').convert_alpha()
 exit_button_menu_img = pg.transform.scale(exit_button_menu_img, (200, 190))
-exit_button_menu_img_2=pg.image.load('Assets/kepek/Gombok/EXITGOMB2Klikk.png').convert_alpha()
-exit_button_menu_img_2=pg.transform.scale(exit_button_menu_img_2, (200, 190))
 pause_button_img = pg.image.load('Assets/kepek/Gombok/PAUSEGOMB.png').convert_alpha()
 pause_button_img = pg.transform.scale(pause_button_img, (200, 190))
-pause_button_img_2=pg.image.load('Assets/kepek/Gombok/PAUSEGOMBKlikk.png').convert_alpha()
-pause_button_img_2=pg.transform.scale(pause_button_img_2, (200, 190))
 resume_button_img = pg.image.load('Assets/kepek/Gombok/RESUME.png').convert_alpha()
 resume_button_img = pg.transform.scale(resume_button_img, (200, 190))
-resume_button_img_2=pg.image.load('Assets/kepek/Gombok/RESUMEKlikk.png').convert_alpha()
-resume_button_img_2=pg.transform.scale(resume_button_img_2, (200, 190))
 
 # Pénz és életerő ikonok
 coin_img = pg.image.load('Assets/kepek/Coin.png').convert_alpha()
@@ -164,14 +151,14 @@ enemy_group.add(enemy)
 
 # Gomb létrehozása(példányosítása) hova teszem le
 # Mennyivel kell lejjebb helyezni a következő gombot
-buy_button = Button(map_rect.width + 20, c.start_y + 0 * (c.button_height + c.padding), buy_button_img, buy_button_img_2)
-cancel_button = Button(map_rect.width + 20, c.start_y + 1 * (c.button_height + c.padding), cancel_button_img, cancel_button_img_2)
-delete_button = Button(map_rect.width + 20, c.start_y + 2 * (c.button_height + c.padding), delete_button_img, delete_button_red_img)
-pause_button = Button(map_rect.width + 20, c.start_y + 3 * (c.button_height + c.padding), pause_button_img, pause_button_img_2)
-resume_button = Button(map_rect.width + 20, c.start_y + 4 * (c.button_height + c.padding), resume_button_img, resume_button_img_2)
-exit_button = Button(map_rect.width + 20, c.start_y + 5 * (c.button_height + c.padding), exit_button_img, exit_button_menu_img_2)
-start_button = Button(475, 150, start_button_img, start_button_img_2)
-exit_button_menu = Button(475, 275, exit_button_menu_img, exit_button_menu_img_2)
+buy_button = Button(map_rect.width + 20, c.start_y + 0 * (c.button_height + c.padding), buy_button_img,True)
+cancel_button = Button(map_rect.width + 20, c.start_y + 1 * (c.button_height + c.padding), cancel_button_img,True)
+delete_button = Button(map_rect.width + 20, c.start_y + 2 * (c.button_height + c.padding), delete_button_img,True)
+pause_button = Button(map_rect.width + 20, c.start_y + 3 * (c.button_height + c.padding), pause_button_img,True)
+resume_button = Button(map_rect.width + 20, c.start_y + 4 * (c.button_height + c.padding), resume_button_img,True)
+exit_button = Button(map_rect.width + 20, c.start_y + 5 * (c.button_height + c.padding), exit_button_img,True)
+start_button = Button(475, 150, start_button_img,True)
+exit_button_menu = Button(475, 275, exit_button_menu_img,True)
 
 # exit_gomb_menu=Button(475, 350, exit_gomb_menu_img_2, True)
 

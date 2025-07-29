@@ -1,62 +1,32 @@
 import pygame as pg
 
+class Button:
+    def __init__(self, x, y, image,single_click):
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x, y)
+        self.clicked=False
+        self.single_click=single_click
 
-class Button(pg.sprite.Sprite):
-    def __init__(self, x, y, image_normal, image_clicked=None):
-        """
-        Gomb osztály Pygame-hez, ami kezeli a kattintás vizuális visszajelzését.
 
-        Args:
-            x (int): A gomb bal felső sarkának X koordinátája.
-            y (int): A gomb bal felső sarkának Y koordinátája.
-            image_normal (pg.Surface): A gomb alapértelmezett (nem lenyomott) képe.
-            image_clicked (pg.Surface, optional): A gomb képe lenyomott állapotban.
-                                                  Ha nincs megadva, az image_normal lesz használva.
-        """
-        super().__init__()
-        self.image_normal = image_normal
-        # Ha nincs megadva image_clicked, akkor az image_normal lesz használva a lenyomott állapothoz is
-        self.image_clicked = image_clicked if image_clicked is not None else image_normal
-        self.image = self.image_normal  # Az aktuálisan megjelenített kép
-        self.rect = self.image.get_rect(topleft=(x, y))
-        self.is_pressed = False  # Jelzi, hogy a gomb éppen le van-e nyomva az egérrel
-        self.action = False  # Jelzi, hogy a gombra sikeresen rákattintottak-e (lenyomás és felengedés)
+    def draw(self,surface):
+        #kattintas
+        action=False
 
-    def draw(self, surface):
-        """
-        Kirajzolja a gombot a felületre, és kezeli az egér eseményeket.
+        #eger pozicio
+        pos=pg.mouse.get_pos()
+        if self.rect.collidepoint(pos):
+            if pg.mouse.get_pressed()[0]==1 and self.clicked == False:#csak bal klikk a 0
+                action=True #ha kattintok akkor igazza valik
+                #ha egszer lehet kattintani a gombra
+                if self.single_click:
+                    self.clicked=True
 
-        Args:
-            surface (pg.Surface): Az a felület, amire a gombot rajzolni kell.
+        if pg.mouse.get_pressed()[0]==0: #ha a bal klikk es ennyi, vagyis ha mar egsyer klikkeltunk lehet tobbszor is
+            self.clicked=False
 
-        Returns:
-            bool: True, ha a gombra rákattintottak (mouse down és mouse up történt), egyébként False.
-        """
-        self.action = False  # Alaphelyzetbe állítás minden képkockánál
-        mouse_pos = pg.mouse.get_pos()
-        left_click = pg.mouse.get_pressed()[0]
+        #kirajzolom a gombot a screenre
+        surface.blit(self.image,self.rect)
 
-        # Ellenőrizzük, hogy az egér a gomb felett van-e
-        if self.rect.collidepoint(mouse_pos):
-            if left_click == 1 and not self.is_pressed:
-                # Gomb lenyomva
-                self.image = self.image_clicked
-                self.is_pressed = True
+        return action
 
-            if left_click == 0 and self.is_pressed:
-                # Gomb felengedve, és előtte le volt nyomva (sikeres kattintás)
-                self.image = self.image_normal
-                self.is_pressed = False
-                self.action = True  # Ekkor váltja ki az akciót
-
-        elif self.is_pressed:
-            # Ha az egér elhagyta a gombot lenyomott állapotban, engedjük el
-            self.image = self.image_normal
-            self.is_pressed = False
-
-        # Ha az egér nincs a gomb felett és nincs lenyomva
-        if not self.rect.collidepoint(mouse_pos) and not self.is_pressed:
-            self.image = self.image_normal
-
-        surface.blit(self.image, self.rect)
-        return self.action
