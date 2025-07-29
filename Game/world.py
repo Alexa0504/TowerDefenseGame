@@ -7,6 +7,7 @@ class World():
         self.map_image = map_image
         self.health = c.HEALTH
         self.money = c.MONEY
+        self.level = c.LEVEL
 
     def draw(self, surface):
         surface.blit(self.map_image, (0, 0))

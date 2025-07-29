@@ -5,6 +5,7 @@ Side_panel = 240
 
 HEALTH = 100
 MONEY = 250
+LEVEL=1
 
 BUY_COST = 5
 UPGRADE_COST = 100

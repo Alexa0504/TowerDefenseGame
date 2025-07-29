@@ -67,24 +67,15 @@ tower_img = pg.transform.scale(tower_img, (100, 100))
 feherTerkep = pg.image.load('Assets/kepek/terkepfeher.png').convert_alpha()
 
 # Gombok betöltése és átméretezése
-buy_button_img = pg.image.load('Assets/kepek/Gombok/BUYGOMB.png').convert_alpha()
-buy_button_img = pg.transform.scale(buy_button_img, (200, 190))
-cancel_button_img = pg.image.load('Assets/kepek/Gombok/CANCELGOMB.png').convert_alpha()
-cancel_button_img = pg.transform.scale(cancel_button_img, (200, 190))
-exit_button_img = pg.image.load('Assets/kepek/Gombok/EXITGOMB2.png').convert_alpha()
-exit_button_img = pg.transform.scale(exit_button_img, (200, 190))
-delete_button_img = pg.image.load('Assets/kepek/Gombok/DELETEGOMB.png').convert_alpha()
-delete_button_img = pg.transform.scale(delete_button_img, (200, 190))
-delete_button_red_img = pg.image.load('Assets/kepek/Gombok/DELETEGOMBPIROS.png').convert_alpha()
-delete_button_red_img = pg.transform.scale(delete_button_red_img, (200, 190))
-start_button_img = pg.image.load('Assets/kepek/Gombok/STARTGOMB.png').convert_alpha()
-start_button_img = pg.transform.scale(start_button_img, (200, 190))
-exit_button_menu_img = pg.image.load('Assets/kepek/Gombok/EXITGOMB2.png').convert_alpha()
-exit_button_menu_img = pg.transform.scale(exit_button_menu_img, (200, 190))
-pause_button_img = pg.image.load('Assets/kepek/Gombok/PAUSEGOMB.png').convert_alpha()
-pause_button_img = pg.transform.scale(pause_button_img, (200, 190))
-resume_button_img = pg.image.load('Assets/kepek/Gombok/RESUME.png').convert_alpha()
-resume_button_img = pg.transform.scale(resume_button_img, (200, 190))
+buy_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/BUYGOMB.png').convert_alpha(),(200,190))
+cancel_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/CANCELGOMB.png').convert_alpha(),(200,190))
+exit_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/EXITGOMB2.png').convert_alpha(),(200,190))
+delete_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/DELETEGOMB.png').convert_alpha(),(200,190))
+delete_button_red_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/DELETEGOMBPIROS.png').convert_alpha(),(200,190))
+start_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/STARTGOMB.png').convert_alpha(),(200,190))
+exit_button_menu_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/EXITGOMB2.png').convert_alpha(),(200,190))
+pause_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/PAUSEGOMB.png').convert_alpha(),(200,190))
+resume_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/RESUME.png').convert_alpha(),(200,190))
 
 # Pénz és életerő ikonok
 coin_img = pg.image.load('Assets/kepek/Coin.png').convert_alpha()
@@ -93,11 +84,6 @@ heart_img = pg.image.load('Assets/kepek/Heart.png').convert_alpha()
 # x jel betöltése
 # x_img=pg.image.load('Assets/kepek/x.png').convert_alpha()
 # x_img=pg.transform.scale(x_img, (100, 100))
-
-# Robbanás betöltése
-
-bumm_img = pg.image.load('Assets/kepek/Robbanas/Robbanas.png').convert_alpha()
-bumm_img = pg.transform.scale(bumm_img, (75, 75))
 
 
 # Hova lehet és hova nem lehet pakolni fegyvert
@@ -168,12 +154,12 @@ exit_button_menu = Button(500, 275, exit_button_menu_img, True)
 
 # Szöveg megjelenítése
 text_font = pg.font.SysFont('Comic Sans MS', 24, bold=True)
-large_font = pg.font.SysFont('Comic Sans MS', 36)
+large_font = pg.font.SysFont('Comic Sans MS', 36, bold=True)
 
 
 # Számok(szöveg) kiírása a képernyőre
-def draw_text(text, font, tex_color, x, y):
-    img = font.render(text, True, tex_color)
+def draw_text(text, font, text_color, x, y):
+    img = font.render(text, True, text_color)
     screen.blit(img, (x, y))
 
 
@@ -352,6 +338,7 @@ while running:
         enemy_group.draw(screen)
         draw_text(str(world.health), text_font, "black", 5, 40)
         draw_text(str(world.money), text_font, "black", 5, 80)
+        draw_text("Level: " + str(world.level), large_font, "black", 450, 40)
 
         # Pénz és szív ikonok kirajzolása
         screen.blit(heart_img, (10, 40 + 20))
