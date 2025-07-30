@@ -43,6 +43,11 @@ start_img = pg.transform.scale(start_img, (screen.get_width(), screen.get_height
 toolbar_image = pg.image.load('Assets/kepek/JobbHatter.png')  # Kép betöltése
 toolbar_image = pg.transform.scale(toolbar_image, (c.Side_panel, map_rect.height))  # Méretezés
 
+
+#Table betöltése
+table_img=pg.image.load('Assets/kepek/Table.png').convert_alpha()
+table_img=pg.transform.scale(table_img, (400,100))
+
 # Ellenség betöltése
 enemy_fish_img1 = pg.image.load('Assets/kepek/Enemy/piroshal.png').convert_alpha()  # Első kép
 enemy_fish_img2 = pg.image.load('Assets/kepek/Enemy/kekhal.png').convert_alpha()  # Második kép
@@ -305,10 +310,6 @@ while running:
         toolbar_rect = pg.Rect(map_rect.width, 0, c.Side_panel, map_rect.height)
         screen.blit(toolbar_image, toolbar_rect)
 
-        # Törlés mód szöveg kiírása
-        if deleting_towers:
-            draw_text("Törlés mód aktív!", text_font, (255, 0, 0), map_rect.width + 10, c.start_y - 40)
-
         # új ellenség spawnolása idő alapján
         current_time = pg.time.get_ticks()
         if current_time - last_spawn_time > SPAWN_DELAY:
@@ -338,7 +339,8 @@ while running:
         enemy_group.draw(screen)
         draw_text(str(world.health), text_font, "black", 5, 40)
         draw_text(str(world.money), text_font, "black", 5, 80)
-        draw_text("Level: " + str(world.level), large_font, "black", 450, 40)
+        screen.blit(table_img, (330,35))
+        draw_text("Level: " + str(world.level), large_font, "black", 455, 45)
 
         # Pénz és szív ikonok kirajzolása
         screen.blit(heart_img, (10, 40 + 20))
