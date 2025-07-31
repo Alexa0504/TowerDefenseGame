@@ -8,74 +8,61 @@ from Game.enemy_boat import Enemy_boat
 from Game.enemy_pufferfish import Enemy_pufferfish
 import random
 
-# inicializálom a pygamet
+"""Initialize Pygame"""
 pg.init()
 
 clock = pg.time.Clock()
 
 pg.display.set_caption("Játék")
-# változók
-#placing_towers = False
-#selected_towers = None
-#deleting_towers = False
-#dragging_tower = False
-#tower_preview_pos = None  # egér pozíció, ahova a tornyot mutatja
-#selected_button = None
-#game_state = "menu"
 
-##################
-# KEPEK BETOLTESE
-##################
+"""Loading images"""
 
-# Térkép betöltése
-map_image = pg.image.load('Assets/kepek/terkep.png')  # a térképed útvonala
+"""Map"""
+map_image = pg.image.load('Assets/kepek/terkep.png')
 map_rect = map_image.get_rect()
 
-# Ablak betöltése
-screen = pg.display.set_mode((map_rect.width + c.Side_panel, map_rect.height))  # hozzaadtam a side panelt is
+"""Screen and side panel"""
+screen = pg.display.set_mode((map_rect.width + c.Side_panel, map_rect.height))
 map_image = map_image.convert_alpha()
 
-# Kezdőképernyő betöltése
+"""Loading the start screen (menu)"""
 start_img = pg.image.load("assets/kepek/MenuKep.png")
 start_img = pg.transform.scale(start_img, (screen.get_width(), screen.get_height()))
 
-# toolbar betoltese
-toolbar_image = pg.image.load('Assets/kepek/JobbHatter.png')  # Kép betöltése
-toolbar_image = pg.transform.scale(toolbar_image, (c.Side_panel, map_rect.height))  # Méretezés
+"""Loading the toolbar"""
+toolbar_image = pg.image.load('Assets/kepek/JobbHatter.png')
+toolbar_image = pg.transform.scale(toolbar_image, (c.Side_panel, map_rect.height))
 
-# Table betöltése
+"""Loading the table"""
 table_img = pg.image.load('Assets/kepek/Table.png').convert_alpha()
 table_img = pg.transform.scale(table_img, (400, 100))
 
-# Ellenség betöltése
-enemy_fish_img1 = pg.image.load('Assets/kepek/Enemy/piroshal.png').convert_alpha()  # Első kép
-enemy_fish_img2 = pg.image.load('Assets/kepek/Enemy/kekhal.png').convert_alpha()  # Második kép
-
+"""Loading enemy"""
+enemy_fish_img1 = pg.image.load('Assets/kepek/Enemy/piroshal.png').convert_alpha()
+enemy_fish_img2 = pg.image.load('Assets/kepek/Enemy/kekhal.png').convert_alpha()
 enemy_boat_img = pg.image.load('Assets/kepek/Enemy/Hajo.png').convert_alpha()
 enemy_boat_img = pg.transform.scale(enemy_boat_img, (100, 100))
-
 pufferfish1_img=pg.image.load('Assets/kepek/Enemy/Pufferfish1.png').convert_alpha()
-pufferfish1_img = pg.transform.scale(pufferfish1_img, (50, 50))
+pufferfish1_img = pg.transform.scale(pufferfish1_img, (75, 75))
 pufferfish2_img=pg.image.load('Assets/kepek/Enemy/Pufferfish2.png').convert_alpha()
-pufferfish2_img = pg.transform.scale(pufferfish2_img, (50, 50))
+pufferfish2_img = pg.transform.scale(pufferfish2_img, (75, 75))
 
-# A fegyver animaciojanak betoltese
-tower_frames = [
+"""Load turret animation frames"""
+turret_frames = [
     pg.image.load('Assets/kepek/Lovo/ujLovo.png').convert_alpha(),
     pg.image.load('Assets/kepek/Lovo/ujLovo2.png').convert_alpha(),
     pg.image.load('Assets/kepek/Lovo/ujLovo3.png').convert_alpha(),
-    pg.image.load('Assets/kepek/Lovo/ujLovo4.png').convert_alpha()
-]
-tower_frames = [pg.transform.scale(img, (100, 100)) for img in tower_frames]
+    pg.image.load('Assets/kepek/Lovo/ujLovo4.png').convert_alpha()]
+turret_frames = [pg.transform.scale(img, (100, 100)) for img in turret_frames]
 
-# Fegyver betöltése
-tower_img = pg.image.load('Assets/kepek/Lovo/ujLovo.png').convert_alpha()
-tower_img = pg.transform.scale(tower_img, (100, 100))
+"""Loading the wturret for basic weapon handling"""
+turret_img = pg.image.load('Assets/kepek/Lovo/ujLovo.png').convert_alpha()
+turret_img = pg.transform.scale(turret_img, (100, 100))
 
-# Térkép betöltése (Ahol fehér)
-feherTerkep = pg.image.load('Assets/kepek/terkepfeher.png').convert_alpha()
+"""Loading the white map"""
+white_map = pg.image.load('Assets/kepek/terkepfeher.png').convert_alpha()
 
-# Gombok betöltése és átméretezése
+"""Loading buttons and scaling their size"""
 buy_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/BUYGOMB.png').convert_alpha(), (200, 190))
 cancel_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/CANCELGOMB.png').convert_alpha(), (200, 190))
 exit_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/EXITGOMB2.png').convert_alpha(), (200, 190))
@@ -86,49 +73,45 @@ exit_button_menu_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/EXI
 pause_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/PAUSEGOMB.png').convert_alpha(), (200, 190))
 resume_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/RESUME.png').convert_alpha(), (200, 190))
 
-# Pénz és életerő ikonok
+"""Money and health icons"""
 coin_img = pg.image.load('Assets/kepek/Coin.png').convert_alpha()
 heart_img = pg.image.load('Assets/kepek/Heart.png').convert_alpha()
 
 
 class Game:
+    """Handles game initialization, main loop, event processing, updating game state, and rendering."""
     def __init__(self):
+        """Sets up game variables, world, enemy and tower groups, UI buttons, fonts, and starts the first enemy wave."""
 
-
-        self.placing_towers = False
-        self.selected_towers = None
-        self.deleting_towers = False
-        self.dragging_tower = False
-        self.tower_preview_pos = None
+        self.placing_turrets = False
+        self.selected_turrets = None
+        self.deleting_turrets = False
+        self.dragging_turret = False
+        self.turret_preview_pos = None # Preview position for turret placement
         self.selected_button = None
         self.game_state = "menu"
         self.running = True
         self.is_game_over = False
 
-        # Játék objektumok
         self.world = World(map_image)
         self.enemy_group = pg.sprite.Group()
-        self.tower_group = pg.sprite.Group()
+        self.turret_group = pg.sprite.Group()
 
-        # Új ellenségek létrehozásához időzítés
-        self.SPAWN_DELAY = 2000  # 2000 ms = 2 masodperc
-        self.last_spawn_time = 0  # Az előző spawn idejét tároljuk
+        self.SPAWN_DELAY = 1000  # 1000 ms = 1 second
+        self.last_spawn_time = 0
 
-        self.enemies_to_spawn_in_wave = 5  # Ennyi ellenség jön egy hullámban
-        self.enemies_spawned_this_wave = 0  # Ennyi ellenség jött már a jelenlegi hullámban
-        self.wave_completed = False  # Jelzi, ha egy hullám ellenségei elpusztultak
+        self.enemies_to_spawn_in_wave = 5
+        self.enemies_spawned_this_wave = 0
+        self.wave_completed = False
 
-        #self.enemy_individual_spawn_delay_ms = 500
         self.enemy_list = []
 
-        # Koordináták az ellenség útvonalához
-        self.koordinatak = [
+        self.coordinates = [
             (179, 9), (113, 60), (115, 207), (227, 331), (397, 345),
             (455, 403), (459, 645), (559, 715), (665, 761), (869, 785), (955, 865)
         ]
 
-        # Gomb létrehozása(példányosítása) hova teszem le
-        # Mennyivel kell lejjebb helyezni a következő gombot
+        # Creating (instantiating) buttons-where to place them
         self.buy_button = Button(map_rect.width + 20, c.start_y + 0 * (c.button_height + c.padding), buy_button_img, True)
         self.cancel_button = Button(map_rect.width + 20, c.start_y + 1 * (c.button_height + c.padding), cancel_button_img, True)
         self.delete_button = Button(map_rect.width + 20, c.start_y + 2 * (c.button_height + c.padding), delete_button_img, True)
@@ -138,80 +121,79 @@ class Game:
         self.start_button = Button(500, 150, start_button_img, True)
         self.exit_button_menu = Button(500, 275, exit_button_menu_img, True)
 
-        # Szöveg megjelenítése
+        # Displaying text
         self.text_font = pg.font.SysFont('Comic Sans MS', 24, bold=True)
         self.large_font = pg.font.SysFont('Comic Sans MS', 36, bold=True)
 
-        # Kezdeti ellenségek spawnolása
-        # self._spawn_initial_enemies()
-        self.start_new_wave()
-
     def start_new_wave(self):
-        """Előkészíti és elindítja a következő ellenséghullámot."""
-        # Növeljük a szintet
+        """Prepares and starts the next enemy wave."""
+
+        #Level up
         if self.world.level < 5:
             self.world.level += 1
         else:
             print("Finished")
             self.running = False
 
-        # Beállítjuk a következő hullámhoz szükséges értékeket
+        #Set values needed for the next wave
         self.enemies_spawned_this_wave = 0
         self.wave_completed = False
-        self.last_spawn_time = pg.time.get_ticks()  # Reseteljük a spawn időzítőt az új hullámhoz
+        self.last_spawn_time = pg.time.get_ticks() #Reset the spawn timer for the new wave
 
-        # Az ellenségek száma növekedhet a szinttel (például)
-        self.enemies_to_spawn_in_wave = 5 + (self.world.level - 1) * 2  # Példa: minden szinten 4-el több ellenség(10-el kezd)
+        self.enemies_to_spawn_in_wave = 5 + (self.world.level - 1) * 2  #The number of enemies always increases by two with each level.
 
     def spawn_enemy_in_wave(self):
-        """Spawnol egy ellenséget, ha még nem érte el a hullám limitjét."""
+        """Spawns an enemy if the wave limit has not been reached yet"""
 
         if self.enemies_spawned_this_wave < self.enemies_to_spawn_in_wave:
             enemy_type = random.choice([
-                Enemy_pufferfish(self.koordinatak, pufferfish1_img, pufferfish2_img),
-                Enemy_boat(self.koordinatak, enemy_boat_img),
-                Enemy(self.koordinatak, enemy_fish_img1, enemy_fish_img2)
+                Enemy_pufferfish(self.coordinates, pufferfish1_img, pufferfish2_img),
+                Enemy_boat(self.coordinates, enemy_boat_img),
+                Enemy(self.coordinates, enemy_fish_img1, enemy_fish_img2)
             ])
             self.enemy_group.add(enemy_type)
             self.enemies_spawned_this_wave += 1
-            return True  # Jelzi, hogy spawnolt egy ellenséget
-        return False  # Jelzi, hogy már nem kell több ellenséget spawnolni ebben a hullámban
+            return True  #An enemy is successfully spawned
+        return False  #It indicates that no more enemies need to be spawned in this wave once the limit is reached
+
     def draw_text(self, text, font, text_color, x, y, center=False):
-        """Számok(szöveg) kiírása a képernyőre"""
+        """Displays numbers (text) on the screen"""
+
         img = font.render(text, True, text_color)
         text_rect = img.get_rect()
         if center:
-            text_rect.center = (x, y)  # A téglalap közepét állítja be
+            text_rect.center = (x, y)  #If True, it will display the text centered on the screen
         else:
-            text_rect.topleft = (x, y)  # A téglalap bal felső sarkát állítja be
-        screen.blit(img, text_rect)  # A globális 'screen' felületre rajzolunk
+            text_rect.topleft = (x, y) #If False, the (x, y) point will be the top-left corner of the text.
+        screen.blit(img, text_rect)
 
-    def create_tower(self, mouse_pos):
-        """Hova lehet és hova nem lehet pakolni fegyvert"""
-        # lehet e idepakolni
-        color = feherTerkep.get_at(mouse_pos)  # feherTerkep globális
-        if color == pg.Color(255, 255, 255):  # fehér → nem pakolható
+    def create_turret(self, mouse_pos):
+        """Defines valid and invalid areas for tower placement"""
+
+        # Checks if a turret can be placed here
+        color = white_map.get_at(mouse_pos)
+        if color == pg.Color(255, 255, 255):  #If it's white, placement is not allowed
             return
-        # Torony kozepén lesz
-        new_tower_rect = tower_img.get_rect(center=mouse_pos)  # tower_img globális
+        # The tower will be centered at the mouse position.
+        new_turret_rect = turret_img.get_rect(center=mouse_pos)
 
-        # távolsag a középpontok között
-        for tower in self.tower_group:
-            # Megnézi hogy a torony túl közel van e egy már meglévőhöz
-            dist = ((tower.rect.centerx - new_tower_rect.centerx) ** 2 +
-                    (tower.rect.centery - new_tower_rect.centery) ** 2) ** 0.5
-            if dist < 40:  # Ha 40 pixelnel kozelebb van a masik torony
-                return  # Nem hozok letre ujat
+        for tower in self.turret_group:
+            # It checks if the tower is too close to an existing one
+            dist = ((tower.rect.centerx - new_turret_rect.centerx) ** 2 +
+                    (tower.rect.centery - new_turret_rect.centery) ** 2) ** 0.5
+            if dist < 40:  # If it is closer than 40 pixels to another tower
+                return  # Do not create a new one
 
-        # Ha nincs ütközés, hozzuk létre
-        tower = Tower(tower_frames, mouse_pos)  # tower_frames globális
-        self.tower_group.add(tower)
+        # If there is no collision, create it
+        tower = Tower(turret_frames, mouse_pos)
+        self.turret_group.add(tower)
 
     def game_reset(self):
-        """Játék állapotának visszaállítása kezdeti értékre"""
+        """Resets the game state to the initial values, clearing the world, enemy, and tower groups."""
+
         self.world = World(map_image)
         self.enemy_group.empty()
-        self.tower_group.empty()
+        self.turret_group.empty()
 
         self.enemies_spawned_this_wave = 0
         self.wave_completed = False
@@ -221,22 +203,26 @@ class Game:
 
         self.start_new_wave()
 
-        self.placing_towers = False
-        self.selected_towers = None
-        self.deleting_towers = False
-        self.dragging_tower = False
-        self.tower_preview_pos = None
+        self.placing_turrets = False
+        self.selected_turrets = None
+        self.deleting_turrets = False
+        self.dragging_turret = False
+        self.turret_preview_pos = None
         self.delete_button.image = delete_button_img
 
     def check_for_game_over(self):
+        """Checks if the game is over, if any enemy has reached the end of the path."""
+        # If any enemy's right edge is beyond the end of the path, the game is over.
         for enemy in self.enemy_group:
-            if enemy.rect.right >= self.koordinatak[10][0]:
+            if enemy.rect.right >= self.coordinates[10][0]:
                 self.is_game_over = True
                 self.game_state = "game_over"
                 return True
         return False
 
     def game_over_events(self, event):
+        """Handles events in the 'game_over' state."""
+        # If the game is over, we can handle events like pressing 'M' for menu or 'Escape' to exit.
         if event.type == pg.QUIT:
             self.running = False
         if event.type == pg.KEYDOWN:
@@ -248,13 +234,11 @@ class Game:
                 self.game_state = "exit"
                 self.running = False
 
-    # Eseménykezelő Metódusok Állapotokhoz
-
     def menu_events(self, event):
-        """Eseménykezelés a 'menu' állapotban."""
-
-        # egérkattintás a menüben
-        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:  # bal klikk
+        """Handles events in the 'menu' state."""
+        # If the game is in the menu state, we can handle events like starting the game or exiting.
+        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:  # left mouse button
+            # Check if the mouse position collides with the start or exit buttons
             mouse_pos = event.pos
             if self.start_button.rect.collidepoint(mouse_pos):
                 self.game_state = "playing"
@@ -262,95 +246,97 @@ class Game:
                 self.running = False
 
     def playing_events(self, event):
-        """Eseménykezelés a 'playing' állapotban."""
-
-        # billentyűzet eseménykezelés
+        """Handles events in the 'playing' state."""
+        # If the game is in the playing state, we can handle events like placing towers,
+        # deleting towers, or pausing the game.
         if event.type == pg.KEYDOWN:
-            if event.key == pg.K_d:  # 'D' billentyű a törlésre
-                self.deleting_towers = not self.deleting_towers
-                self.placing_towers = False
-                self.dragging_tower = False
-                self.selected_towers = None
-                if self.deleting_towers:
-                    self.delete_button.image = delete_button_red_img  # globális kép
+            if event.key == pg.K_d:  # 'D' key for deleting towers
+                self.deleting_turrets = not self.deleting_turrets
+                self.placing_turrets = False
+                self.dragging_turret = False
+                self.selected_turrets = None
+                if self.deleting_turrets:
+                    self.delete_button.image = delete_button_red_img
                 else:
-                    self.delete_button.image = delete_button_img  # globális kép
-            elif event.key == pg.K_b:  # 'B' billentyű a vásárlásra
-                self.placing_towers = True
-                self.dragging_tower = True
-                self.deleting_towers = False
-                self.selected_towers = None
-                self.delete_button.image = delete_button_img  # globális kép
+                    self.delete_button.image = delete_button_img
+            elif event.key == pg.K_b:  # 'B' key for buying towers
+                self.placing_turrets = True
+                self.dragging_turret = True
+                self.deleting_turrets = False
+                self.selected_turrets = None
+                self.delete_button.image = delete_button_img
+        elif event.type == pg.MOUSEBUTTONDOWN and event.button == 1: # left mouse button
+            mouse_pos = event.pos # Get the mouse position
 
-        # egérkattintás eseménykezelése
-        elif event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-            mouse_pos = event.pos
-
-            # gombok kezelése
+            # Check if the mouse position collides with the buttons
             if self.delete_button.rect.collidepoint(mouse_pos):
-                self.deleting_towers = not self.deleting_towers
-                self.placing_towers = False
-                self.dragging_tower = False
-                self.selected_towers = None
-                if self.deleting_towers:
-                    self.delete_button.image = delete_button_red_img  # globális kép
+                self.deleting_turrets = not self.deleting_turrets
+                self.placing_turrets = False
+                self.dragging_turret = False
+                self.selected_turrets = None
+                if self.deleting_turrets:
+                    self.delete_button.image = delete_button_red_img
                 else:
-                    self.delete_button.image = delete_button_img  # globális kép
+                    self.delete_button.image = delete_button_img
             elif self.buy_button.rect.collidepoint(mouse_pos):
-                self.dragging_tower = True
-                self.placing_towers = True
-                self.deleting_towers = False
-                self.selected_towers = None
-                self.delete_button.image = delete_button_img  # A buy gomb kikapcsolja a delete módot (globális kép)
+                self.dragging_turret = True
+                self.placing_turrets = True
+                self.deleting_turrets = False
+                self.selected_turrets = None
+                self.delete_button.image = delete_button_img # Reset the delete button image to the normal one
+            # Cancel button to stop placing towers
             elif self.cancel_button.rect.collidepoint(mouse_pos):
-                self.dragging_tower = False
-                self.placing_towers = False
-                self.deleting_towers = False
-                self.selected_towers = None
+                self.dragging_turret = False
+                self.placing_turrets = False
+                self.deleting_turrets = False
+                self.selected_turrets = None
             elif self.exit_button.rect.collidepoint(mouse_pos):
-                self.game_state = "menu"
+                self.game_state = "menu" # Return to the menu state
                 self.game_reset()
             elif self.pause_button.rect.collidepoint(mouse_pos):
-                self.game_state = "paused"
+                self.game_state = "paused" # Switch to the paused state
 
-            # torony elhelyezése
-            elif self.dragging_tower and mouse_pos[0] < map_rect.width and mouse_pos[
-                1] < map_rect.height:  # map_rect globális
-                if self.world.money >= c.BUY_COST:
-                    current_tower_count = len(self.tower_group)
-                    self.create_tower(mouse_pos)
-                    # Csak akkor vonjuk le a pénzt, ha tényleg sikeresen létrehoztuk a tornyot
-                    if len(self.tower_group) > current_tower_count:
+            # Turret placement
+            # Mouse position is within the map area
+            # If the mouse is within the map area and I am dragging a tower
+            elif self.dragging_turret and mouse_pos[0] < map_rect.width and mouse_pos[1] < map_rect.height:
+                if self.world.money >= c.BUY_COST: # Check if there is enough money to buy a turret
+                    current_turret_count = len(self.turret_group) # Count the current number of turrets
+                    self.create_turret(mouse_pos)
+                    # If the turret was successfully created, deduct the cost
+                    # If the number of turrets is less than the current count, it means a turret
+                    if len(self.turret_group) > current_turret_count:
                         self.world.money -= c.BUY_COST
                     else:
                         print("Nem lehet ide tornyot építeni, vagy túl közel van egy másikhoz!")
                 else:
                     print("Nincs elég pénzed")
-                self.dragging_tower = False
-                self.placing_towers = False
-                self.tower_preview_pos = None  # Éppen nem húzok tornyot
+                self.dragging_turret = False
+                self.placing_turrets = False
+                self.turret_preview_pos = None
 
-            # torony kijelölése vagy törlése
-            elif mouse_pos[0] < map_rect.width and not self.dragging_tower:  # map_rect globális
+            # If the mouse is within the map area and I am not dragging a turret
+            elif mouse_pos[0] < map_rect.width and not self.dragging_turret:
                 clicked_on_tower = False
-                for tower in self.tower_group:
+                for tower in self.turret_group: #This checks if the mouse is on a turret
+                    # If the mouse position collides with a turret's rectangle
                     if tower.rect.collidepoint(mouse_pos):
                         clicked_on_tower = True
-                        if self.deleting_towers:
+                        if self.deleting_turrets:
                             tower.kill()
-                            self.selected_towers = None
-                            self.deleting_towers = False
+                            self.selected_turrets = None
+                            self.deleting_turrets = False
                             self.delete_button.image = delete_button_img  # Törlés után visszaáll a gomb képe (globális kép)
                         else:
-                            self.selected_towers = tower
+                            self.selected_turrets = tower
                         break
                 if not clicked_on_tower:
-                    self.selected_towers = None
+                    self.selected_turrets = None
 
     def paused_events(self, event):
-        """Eseménykezelés a 'paused' állapotban."""
+        """Handles events in the 'paused' state."""
+        # If the game is paused, we can handle events like resuming the game or exiting
 
-        # egérkattintás a szünet képernyőn
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
             mouse_pos = event.pos
             if self.resume_button.rect.collidepoint(mouse_pos):
@@ -359,76 +345,76 @@ class Game:
                 self.running = False
 
     def draw_menu_screen(self):
-        """Kirajzolja a menü képernyő elemeit."""
-        screen.blit(start_img, (0, 0))  # start_img globális
+        """The main menu screen is drawn here."""
+
+        screen.blit(start_img, (0, 0)) # Draw the background image
         self.start_button.draw(screen)
         self.exit_button_menu.draw(screen)
 
     def draw_playing_screen(self):
-        """Frissíti és kirajzolja a játék állapotának elemeit."""
-        # Objektumok frissítése
+        """The main game screen is drawn here."""
+
         self.enemy_group.update()
-        self.tower_group.update()
+        self.turret_group.update()
 
         self.check_for_game_over()
 
-        # térkép és toolbar kirajzolása
-        self.world.draw(screen)  # A globális 'screen' felületre rajzolunk
-        toolbar_rect = pg.Rect(map_rect.width, 0, c.Side_panel, map_rect.height)  # Jobb szélén, 0 pixel magasságban
-        screen.blit(toolbar_image, toolbar_rect)  # toolbar_image globális
 
-        # Új ellenség spawnolása hullámok szerint
-        current_time = pg.time.get_ticks()
+        self.world.draw(screen)
+        toolbar_rect = pg.Rect(map_rect.width, 0, c.Side_panel, map_rect.height)  # At the right edge, at 0 pixels height
+        screen.blit(toolbar_image, toolbar_rect)
+
+        # Spawning new enemies based on waves
+        current_time = pg.time.get_ticks() # Get the current time in milliseconds
         if not self.wave_completed:
-            if current_time - self.last_spawn_time > self.SPAWN_DELAY:
+            if current_time - self.last_spawn_time > self.SPAWN_DELAY: # If enough time has passed since the last spawn
+                # Spawn a new enemy if the wave limit has not been reached
                 if self.spawn_enemy_in_wave():
                     self.last_spawn_time = current_time
                 else:
-                    if len(self.enemy_group) == 0:
-                        self.wave_completed = True
+                    if len(self.enemy_group) == 0: # If all enemies in the wave have been spawned
+                        self.wave_completed = True # Set the wave as completed, so we can start a new one
 
-        # Ha a hullám befejeződött és nincs több ellenség a pályán, lépjünk új hullámba
+        # If the wave is completed and there are no enemies left, start a new wave
         if self.wave_completed and len(self.enemy_group) == 0:
-            self.start_new_wave()  # Indítjuk a következő hullámot!
+            self.start_new_wave()  # Start a new wave of enemies
 
-        # torony húzása a kurzorral
-        if self.dragging_tower:
-            self.tower_preview_pos = pg.mouse.get_pos()
-            # Megnézem, hogy a preview kép a térképen van-e
-            if self.tower_preview_pos[0] < map_rect.width:  # map_rect globális
-                preview_rect = tower_img.get_rect(center=self.tower_preview_pos)  # tower_img globális
-                screen.blit(tower_img, preview_rect)  # tower_img globális
+        #Drawing the turret preview image if dragging a turret
+        if self.dragging_turret:
+            self.turret_preview_pos = pg.mouse.get_pos() # Get the current mouse position
+            # If the turret preview position is within the map area
+            if self.turret_preview_pos[0] < map_rect.width:
+                preview_rect = turret_img.get_rect(center=self.turret_preview_pos) #The turret preview will be centered at the mouse position
+                screen.blit(turret_img, preview_rect)
 
-        # gombok kirajzolása
+        #Buttons are drawn on the screen
         self.buy_button.draw(screen)
-        if self.placing_towers:  # csak akkor rajzolja ki a cancel gombot, ha tornyot helyezel el
+        if self.placing_turrets:  # If placing turrets, show the cancel button
             self.cancel_button.draw(screen)
 
         self.delete_button.draw(screen)
         self.pause_button.draw(screen)
         self.exit_button.draw(screen)
 
-        # csoportok kirajzolása
+        # Drawing the enemy and turret groups
         self.enemy_group.draw(screen)
         self.draw_text(str(self.world.health), self.text_font, "black", 5, 40)
         self.draw_text(str(self.world.money), self.text_font, "black", 5, 80)
-        screen.blit(table_img, (330, 35))  # table_img globális
+        screen.blit(table_img, (330, 35))
         self.draw_text("Level: " + str(self.world.level), self.large_font, "black", 455, 45)
 
-        # if self.is_game_over():
-        #   self.draw_text("Game over", self.large_font, "black", map_rect.width/2,map_rect.height/2)
-        #  self.draw_text("Press M to menu or escape to exit", self.large_font, "white", map_rect.width/2,(map_rect.height/2)-50)
 
-        # Pénz és szív ikonok kirajzolása
-        screen.blit(heart_img, (10, 40 + 20))  # heart_img globális
-        screen.blit(coin_img, (10, 80 + 20))  # coin_img globális
+        #Health and money icons are drawn
+        screen.blit(heart_img, (10, 40 + 20))
+        screen.blit(coin_img, (10, 80 + 20))
 
-        # távolsag a középpontok között, tornyok frissítése és lövése
-        for tower in self.tower_group:
+       #Calculate the distance between the centers of the towers and enemies to determine if a tower can fire at an enemy.
+        # If the tower is selected, it will be highlighted with a range circle.
+        for tower in self.turret_group:
             tower.update()
-            tower.draw(screen, selected=(tower == self.selected_towers))
+            tower.draw(screen, selected=(tower == self.selected_turrets)) #Draw the tower, highlighting it if it is selected
             for enemy in self.enemy_group:
-                # A torony és az ellenség középpontja közötti távolság
+                # Calculate the distance between the tower and the enemy
                 distance = ((tower.rect.centerx - enemy.rect.centerx) ** 2 +
                             (tower.rect.centery - enemy.rect.centery) ** 2) ** 0.5
                 if distance < tower.range:
@@ -437,31 +423,36 @@ class Game:
                     break
 
     def draw_paused_screen(self):
-        """Kirajzolja a szünet képernyő elemeit."""
+        """The paused screen is drawn here."""
+        """Displays the paused screen with options to resume or exit."""
+
         screen.fill("#58a846")
-        self.draw_text("PAUSED", self.large_font, "black", screen.get_width() / 2 - 80, screen.get_height() / 2 - 50)
+        self.draw_text("PAUSED", self.large_font, "black", screen.get_width() / 2 - 80, screen.get_height() / 2 - 50) #The text is centered
         self.resume_button.draw(screen)
         self.exit_button.draw(screen)
 
     def draw_gameover_screen(self):
+        """The game over screen is drawn here."""
+        """Displays the game over screen with options to return to the menu or exit."""
+
         screen.fill("#58a846")
         screen_width, screen_height = pg.display.get_surface().get_size()
         self.draw_text("Press M for Menu, or Escape to Exit", self.large_font, "black", screen_width / 2, screen_height / 2,center=True)
         self.draw_text("Game over :/", self.large_font, "black", screen_width / 2,(screen_height / 2) - 50,center=True)
 
     def run(self):
-        """A játék fő ciklusa."""
+        """The main game loop that runs the game."""
+        """Handles the main game loop, including event processing, updating game state, and rendering."""
         self.running = True
 
-        while self.running:  # Ez a ciklus az osztály running változóját figyeli
-            clock.tick(c.Framerates)  # hány képkockát engedélyez másodpercenként
+        while self.running:  # Main game loop
+            clock.tick(c.Framerates)  #How many frames per second are allowed
             screen.fill("grey100")
 
-            # Eseménykezelés
+            # Event handling
             for event in pg.event.get():
                 if event.type == pg.QUIT:
-                    self.running = False  # Kilépés az osztály futásából, ami megállítja a while ciklust
-
+                    self.running = False
                 if self.game_state == "menu":
                     self.menu_events(event)
                 elif self.game_state == "playing":
@@ -471,7 +462,7 @@ class Game:
                 elif self.game_state == "game_over":
                     self.game_over_events(event)
 
-            # A játék kirajzolása és frissítése
+            # Update game state
             if self.game_state == "menu":
                 self.draw_menu_screen()
             elif self.game_state == "playing":

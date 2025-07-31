@@ -2,21 +2,24 @@ import pygame as pg
 
 
 class Tower(pg.sprite.Sprite):
+    """The Tower class represents a tower in the game."""
+
     def __init__(self, images, position):
-        # super().__init__() ugynaz mint a kovetkezo sor
+        """Initialize the tower with images and position."""
+        # super().__init__() # This is an alternative way to call the parent class constructor
         pg.sprite.Sprite.__init__(self)
         self.range = 90
-        self.images = images  # lista: animációs képek
-        self.image = self.images[0]  # kezdőkép
+        self.images = images  #List of images for the tower
+        self.image = self.images[0]  # The first image is the default one
         self.rect = self.image.get_rect()
         self.rect.center = position
         self.selected = False
 
-        # Animációs állapotok
+        #Animation attributes
         self.animating = False
         self.frame_index = 0
         self.last_update = pg.time.get_ticks()
-        self.animation_speed = 100  # 0.1 másodperc
+        self.animation_speed = 100  # 0.1 sec per frame
 
     def update(self):
 
@@ -25,10 +28,10 @@ class Tower(pg.sprite.Sprite):
         self.range_img.fill((0, 0, 0))
         self.range_img.set_colorkey((0, 0, 0))
         pg.draw.circle(self.range_img, "grey100", (self.range, self.range), self.range)
-        self.range_img.set_alpha(100)  # a 100 a félig áttetszőt jelenti
-        self.range_rect = self.range_img.get_rect()  # a körnek is lesz rect-je így kitudom majd rajzolni
+        self.range_img.set_alpha(100)  # 100 means 100/255 opacity
+        self.range_rect = self.range_img.get_rect()  #The circle's rectangle
 
-        # A közepe a toronyé lesz
+        # Set the position of the range rectangle to the center of the tower
         self.range_rect.center = self.rect.center
 
         if self.animating:
@@ -38,12 +41,12 @@ class Tower(pg.sprite.Sprite):
                 self.frame_index += 1
                 if self.frame_index >= len(self.images):
                     self.frame_index = 0
-                    self.animating = False  # animáció vége
-                # beállítom a torony aktuális képét az animációs fázishoz
+                    self.animating = False  # The end of the animation
+                # Update the image to the next frame
                 self.image = self.images[self.frame_index]
 
     def fire(self):
-        # csak akkor kezd el uj animaciot ha eppen nem animal így nem akadozik
+        # This method is called to start the animation
         if not self.animating:
             self.animating = True
             self.frame_index = 0
@@ -51,6 +54,6 @@ class Tower(pg.sprite.Sprite):
 
     def draw(self, surface, selected=False):
         if selected:
-            surface.blit(self.range_img, self.range_rect)  # range kirajzolása, blit a kép felületre másolása
-        # torony kirajzolása
+            surface.blit(self.range_img, self.range_rect)  # Draw the range circle
+        # Draw the tower image
         surface.blit(self.image, self.rect)

@@ -3,7 +3,10 @@ import constants as c
 
 
 class World():
+    """The World class represents the game world, including the map and game state."""
+
     def __init__(self, map_image):
+        """Initialize the world with a map image and game state."""
         self.map_image = map_image
         self.health = c.HEALTH
         self.money = c.MONEY
