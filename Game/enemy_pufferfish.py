@@ -8,8 +8,8 @@ import random
 # from main import explosion_group, bumm_img, Explosion
 
 
-class Enemy(pg.sprite.Sprite):
-    def __init__(self, waypoint, image1, image2, health=100):  # ket kepet hasznalok a halakra
+class Enemy_pufferfish(pg.sprite.Sprite):
+    def __init__(self, waypoint, image1, image2, health=100):
         pg.sprite.Sprite.__init__(self)
         self.waypoint = waypoint
         self.position = Vector2(self.waypoint[0])
@@ -18,29 +18,17 @@ class Enemy(pg.sprite.Sprite):
         self.health = health
         self.angle = 0
 
-        # Véletlenszerűen választunk a két méret közül
-        self.is_big = random.choice([True, False])
-
-        # Méret és életerő beállítása
-        if self.is_big:
-            self.scale = 1.5  # Nagyobb méret
-            self.health = 150  # Több életerő
-        else:
-            self.scale = 1.0  # Normál méret
-            self.health = 100  # Alap életerő
-
-        # Képek méretezése
-        self.original_image1 = pg.transform.scale_by(image1, self.scale)
-        self.original_image2 = pg.transform.scale_by(image2, self.scale)
-
-        self.current_image = self.original_image1
-        self.original = self.current_image
-        self.image = pg.transform.rotate(self.original, self.angle)
+        self.original_image1 = image1
+        self.original_image2 = image2
 
         # Animációhoz
-        # masodpercenkent egyszer valt
         self.animation_speed = 1
         self.last_switch_time = time.time()
+
+        self.current_image = self.original_image1
+        self.image = self.current_image
+
+        self.original = self.current_image
 
         self.rect = self.image.get_rect()
         self.rect.center = self.position

@@ -5,6 +5,7 @@ import constants as c
 from Game.tower import Tower
 from Game.button import Button
 from Game.enemy_boat import Enemy_boat
+from Game.enemy_pufferfish import Enemy_pufferfish
 
 # inicializálom a pygamet
 pg.init()
@@ -53,6 +54,11 @@ enemy_fish_img2 = pg.image.load('Assets/kepek/Enemy/kekhal.png').convert_alpha()
 enemy_boat_img = pg.image.load('Assets/kepek/Enemy/Hajo.png').convert_alpha()
 enemy_boat_img = pg.transform.scale(enemy_boat_img, (100, 100))
 
+pufferfish1_img=pg.image.load('Assets/kepek/Enemy/Pufferfish1.png').convert_alpha()
+pufferfish1_img = pg.transform.scale(pufferfish1_img, (50, 50))
+pufferfish2_img=pg.image.load('Assets/kepek/Enemy/Pufferfish2.png').convert_alpha()
+pufferfish2_img = pg.transform.scale(pufferfish2_img, (50, 50))
+
 # A fegyver animaciojanak betoltese
 tower_frames = [
     pg.image.load('Assets/kepek/Lovo/ujLovo.png').convert_alpha(),
@@ -74,11 +80,9 @@ buy_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/BUYGOMB.p
 cancel_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/CANCELGOMB.png').convert_alpha(), (200, 190))
 exit_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/EXITGOMB2.png').convert_alpha(), (200, 190))
 delete_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/DELETEGOMB.png').convert_alpha(), (200, 190))
-delete_button_red_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/DELETEGOMBPIROS.png').convert_alpha(),
-                                           (200, 190))
+delete_button_red_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/DELETEGOMBPIROS.png').convert_alpha(), (200, 190))
 start_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/STARTGOMB.png').convert_alpha(), (200, 190))
-exit_button_menu_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/EXITGOMB2.png').convert_alpha(),
-                                          (200, 190))
+exit_button_menu_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/EXITGOMB2.png').convert_alpha(),   (200, 190))
 pause_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/PAUSEGOMB.png').convert_alpha(), (200, 190))
 resume_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/RESUME.png').convert_alpha(), (200, 190))
 
@@ -114,6 +118,8 @@ class Game:
         self.enemies_spawned_this_wave = 0  # Ennyi ellenség jött már a jelenlegi hullámban
         self.wave_completed = False  # Jelzi, ha egy hullám ellenségei elpusztultak
 
+        #self.enemy_individual_spawn_delay_ms = 500
+
         # Koordináták az ellenség útvonalához
         self.koordinatak = [
             (179, 9), (113, 60), (115, 207), (227, 331), (397, 345),
@@ -122,18 +128,12 @@ class Game:
 
         # Gomb létrehozása(példányosítása) hova teszem le
         # Mennyivel kell lejjebb helyezni a következő gombot
-        self.buy_button = Button(map_rect.width + 20, c.start_y + 0 * (c.button_height + c.padding), buy_button_img,
-                                 True)
-        self.cancel_button = Button(map_rect.width + 20, c.start_y + 1 * (c.button_height + c.padding),
-                                    cancel_button_img, True)
-        self.delete_button = Button(map_rect.width + 20, c.start_y + 2 * (c.button_height + c.padding),
-                                    delete_button_img, True)
-        self.pause_button = Button(map_rect.width + 20, c.start_y + 3 * (c.button_height + c.padding), pause_button_img,
-                                   True)
-        self.resume_button = Button(map_rect.width + 20, c.start_y + 4 * (c.button_height + c.padding),
-                                    resume_button_img, True)
-        self.exit_button = Button(map_rect.width + 20, c.start_y + 5 * (c.button_height + c.padding), exit_button_img,
-                                  True)
+        self.buy_button = Button(map_rect.width + 20, c.start_y + 0 * (c.button_height + c.padding), buy_button_img, True)
+        self.cancel_button = Button(map_rect.width + 20, c.start_y + 1 * (c.button_height + c.padding), cancel_button_img, True)
+        self.delete_button = Button(map_rect.width + 20, c.start_y + 2 * (c.button_height + c.padding), delete_button_img, True)
+        self.pause_button = Button(map_rect.width + 20, c.start_y + 3 * (c.button_height + c.padding), pause_button_img,True)
+        self.resume_button = Button(map_rect.width + 20, c.start_y + 4 * (c.button_height + c.padding),resume_button_img, True)
+        self.exit_button = Button(map_rect.width + 20, c.start_y + 5 * (c.button_height + c.padding), exit_button_img,  True)
         self.start_button = Button(500, 150, start_button_img, True)
         self.exit_button_menu = Button(500, 275, exit_button_menu_img, True)
 
@@ -143,9 +143,9 @@ class Game:
 
         # Kezdeti ellenségek spawnolása
         # self._spawn_initial_enemies()
-        self._start_new_wave()
+        self.start_new_wave()
 
-    def _start_new_wave(self):
+    def start_new_wave(self):
         """Előkészíti és elindítja a következő ellenséghullámot."""
         # Növeljük a szintet
         if self.world.level < 5:
@@ -160,16 +160,18 @@ class Game:
         self.last_spawn_time = pg.time.get_ticks()  # Reseteljük a spawn időzítőt az új hullámhoz
 
         # Az ellenségek száma növekedhet a szinttel (például)
-        self.enemies_to_spawn_in_wave = 5 + (
-                    self.world.level - 1) * 2  # Példa: minden szinten 4-el több ellenség(10-el kezd)
+        self.enemies_to_spawn_in_wave = 5 + (self.world.level - 1) * 2  # Példa: minden szinten 4-el több ellenség(10-el kezd)
 
-    def _spawn_enemy_in_wave(self):
+    def spawn_enemy_in_wave(self):
         """Spawnol egy ellenséget, ha még nem érte el a hullám limitjét."""
+
         if self.enemies_spawned_this_wave < self.enemies_to_spawn_in_wave:
-            # Ellenség létrehozása (globális képeket használ)
-            enemy = Enemy(self.koordinatak, enemy_fish_img1, enemy_fish_img2)
+            # Determine which enemy to spawn next (you'll need logic for this)
+            # For simplicity, let's just spawn a pufferfish for now
+            enemy = Enemy_pufferfish(self.koordinatak, enemy_fish_img1, enemy_fish_img2)
             enemy_boat = Enemy_boat(self.koordinatak, enemy_boat_img)
-            self.enemy_group.add(enemy, enemy_boat)
+            enemy_pufferfish=Enemy_pufferfish(self.koordinatak,pufferfish1_img,pufferfish2_img)
+            self.enemy_group.add(enemy, enemy_boat,enemy_pufferfish)
             self.enemies_spawned_this_wave += 1
             return True  # Jelzi, hogy spawnolt egy ellenséget
         return False  # Jelzi, hogy már nem kell több ellenséget spawnolni ebben a hullámban
@@ -217,7 +219,7 @@ class Game:
 
         self.is_game_over = False
 
-        self._start_new_wave()
+        self.start_new_wave()
 
         self.placing_towers = False
         self.selected_towers = None
@@ -379,7 +381,7 @@ class Game:
         current_time = pg.time.get_ticks()
         if not self.wave_completed:
             if current_time - self.last_spawn_time > self.SPAWN_DELAY:
-                if self._spawn_enemy_in_wave():
+                if self.spawn_enemy_in_wave():
                     self.last_spawn_time = current_time
                 else:
                     if len(self.enemy_group) == 0:
@@ -387,7 +389,7 @@ class Game:
 
         # Ha a hullám befejeződött és nincs több ellenség a pályán, lépjünk új hullámba
         if self.wave_completed and len(self.enemy_group) == 0:
-            self._start_new_wave()  # Indítjuk a következő hullámot!
+            self.start_new_wave()  # Indítjuk a következő hullámot!
 
         # torony húzása a kurzorral
         if self.dragging_tower:
