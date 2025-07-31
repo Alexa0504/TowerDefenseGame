@@ -14,13 +14,13 @@ clock = pg.time.Clock()
 pg.display.set_caption("Játék")
 
 # változók
-placing_towers = False
-selected_towers = None
-deleting_towers = False
-dragging_tower = False
-tower_preview_pos = None  # egér pozíció, ahova a tornyot mutatja
-selected_button = None
-game_state = "menu"
+#placing_towers = False
+#selected_towers = None
+#deleting_towers = False
+#dragging_tower = False
+#tower_preview_pos = None  # egér pozíció, ahova a tornyot mutatja
+#selected_button = None
+#game_state = "menu"
 
 ##################
 # KEPEK BETOLTESE
@@ -90,17 +90,16 @@ heart_img = pg.image.load('Assets/kepek/Heart.png').convert_alpha()
 class Game:
     def __init__(self):
 
-        # A játék aktuális állapotát jelző változók
-        global placing_towers, selected_towers, deleting_towers, dragging_tower, tower_preview_pos, selected_button, game_state, last_spawn_time
 
-        self.placing_towers = placing_towers
-        self.selected_towers = selected_towers
-        self.deleting_towers = deleting_towers
-        self.dragging_tower = dragging_tower
-        self.tower_preview_pos = tower_preview_pos
-        self.selected_button = selected_button
-        self.game_state = game_state
+        self.placing_towers = False
+        self.selected_towers = None
+        self.deleting_towers = False
+        self.dragging_tower = False
+        self.tower_preview_pos = None
+        self.selected_button = None
+        self.game_state = "menu"
         self.running = True
+        self.is_game_over = False
 
         # Játék objektumok
         self.world = World(map_image)
@@ -123,12 +122,18 @@ class Game:
 
         # Gomb létrehozása(példányosítása) hova teszem le
         # Mennyivel kell lejjebb helyezni a következő gombot
-        self.buy_button = Button(map_rect.width + 20, c.start_y + 0 * (c.button_height + c.padding), buy_button_img,True)
-        self.cancel_button = Button(map_rect.width + 20, c.start_y + 1 * (c.button_height + c.padding), cancel_button_img, True)
-        self.delete_button = Button(map_rect.width + 20, c.start_y + 2 * (c.button_height + c.padding), delete_button_img, True)
-        self.pause_button = Button(map_rect.width + 20, c.start_y + 3 * (c.button_height + c.padding), pause_button_img, True)
-        self.resume_button = Button(map_rect.width + 20, c.start_y + 4 * (c.button_height + c.padding),resume_button_img, True)
-        self.exit_button = Button(map_rect.width + 20, c.start_y + 5 * (c.button_height + c.padding), exit_button_img, True)
+        self.buy_button = Button(map_rect.width + 20, c.start_y + 0 * (c.button_height + c.padding), buy_button_img,
+                                 True)
+        self.cancel_button = Button(map_rect.width + 20, c.start_y + 1 * (c.button_height + c.padding),
+                                    cancel_button_img, True)
+        self.delete_button = Button(map_rect.width + 20, c.start_y + 2 * (c.button_height + c.padding),
+                                    delete_button_img, True)
+        self.pause_button = Button(map_rect.width + 20, c.start_y + 3 * (c.button_height + c.padding), pause_button_img,
+                                   True)
+        self.resume_button = Button(map_rect.width + 20, c.start_y + 4 * (c.button_height + c.padding),
+                                    resume_button_img, True)
+        self.exit_button = Button(map_rect.width + 20, c.start_y + 5 * (c.button_height + c.padding), exit_button_img,
+                                  True)
         self.start_button = Button(500, 150, start_button_img, True)
         self.exit_button_menu = Button(500, 275, exit_button_menu_img, True)
 
@@ -137,13 +142,13 @@ class Game:
         self.large_font = pg.font.SysFont('Comic Sans MS', 36, bold=True)
 
         # Kezdeti ellenségek spawnolása
-        #self._spawn_initial_enemies()
+        # self._spawn_initial_enemies()
         self._start_new_wave()
 
     def _start_new_wave(self):
         """Előkészíti és elindítja a következő ellenséghullámot."""
         # Növeljük a szintet
-        if self.world.level<5:
+        if self.world.level < 5:
             self.world.level += 1
         else:
             print("Finished")
@@ -155,7 +160,8 @@ class Game:
         self.last_spawn_time = pg.time.get_ticks()  # Reseteljük a spawn időzítőt az új hullámhoz
 
         # Az ellenségek száma növekedhet a szinttel (például)
-        self.enemies_to_spawn_in_wave = 5 + (self.world.level - 1) * 2 # Példa: minden szinten 4-el több ellenség(10-el kezd)
+        self.enemies_to_spawn_in_wave = 5 + (
+                    self.world.level - 1) * 2  # Példa: minden szinten 4-el több ellenség(10-el kezd)
 
     def _spawn_enemy_in_wave(self):
         """Spawnol egy ellenséget, ha még nem érte el a hullám limitjét."""
@@ -168,10 +174,15 @@ class Game:
             return True  # Jelzi, hogy spawnolt egy ellenséget
         return False  # Jelzi, hogy már nem kell több ellenséget spawnolni ebben a hullámban
 
-    def draw_text(self, text, font, text_color, x, y):
+    def draw_text(self, text, font, text_color, x, y, center=False):
         """Számok(szöveg) kiírása a képernyőre"""
         img = font.render(text, True, text_color)
-        screen.blit(img, (x, y))  # A globális 'screen' felületre rajzolunk
+        text_rect = img.get_rect()
+        if center:
+            text_rect.center = (x, y)  # A téglalap közepét állítja be
+        else:
+            text_rect.topleft = (x, y)  # A téglalap bal felső sarkát állítja be
+        screen.blit(img, text_rect)  # A globális 'screen' felületre rajzolunk
 
     def create_tower(self, mouse_pos):
         """Hova lehet és hova nem lehet pakolni fegyvert"""
@@ -196,35 +207,49 @@ class Game:
 
     def game_reset(self):
         """Játék állapotának visszaállítása kezdeti értékre"""
-        global placing_towers, selected_towers, deleting_towers, dragging_tower, tower_preview_pos, game_state, last_spawn_time
-
-        self.world = World(map_image) # map_image globális
+        self.world = World(map_image)
         self.enemy_group.empty()
         self.tower_group.empty()
 
         self.enemies_spawned_this_wave = 0
         self.wave_completed = False
-        self.last_spawn_time = pg.time.get_ticks() #Időzítő
-
-        # Uj első hullám
-        self._start_new_wave() # Most már ezt hívjuk reseteléskor is
-        self.world = World(map_image)  # map_image globális
-        self.enemy_group.empty()
-        self.tower_group.empty()
         self.last_spawn_time = pg.time.get_ticks()
+
+        self.is_game_over = False
+
+        self._start_new_wave()
+
         self.placing_towers = False
         self.selected_towers = None
         self.deleting_towers = False
         self.dragging_tower = False
         self.tower_preview_pos = None
-        # Frissíteni a delete gombot is
-        self.delete_button.image = delete_button_img  # delete_button_img globális
+        self.delete_button.image = delete_button_img
 
-    # --- Eseménykezelő Metódusok Állapotokhoz ---
+    def check_for_game_over(self):
+        for enemy in self.enemy_group:
+            if enemy.rect.right >= self.koordinatak[10][0]:
+                self.is_game_over = True
+                self.game_state = "game_over"
+                return True
+        return False
+
+    def game_over_events(self, event):
+        if event.type == pg.QUIT:
+            self.running = False
+        if event.type == pg.KEYDOWN:
+            if event.key == pg.K_m:
+                self.game_state = "menu"
+                self.game_reset()
+                self.is_game_over = False
+            elif event.key == pg.K_ESCAPE:
+                self.game_state = "exit"
+                self.running = False
+
+    # Eseménykezelő Metódusok Állapotokhoz
 
     def menu_events(self, event):
         """Eseménykezelés a 'menu' állapotban."""
-        global running, game_state  # running globális ciklushoz
 
         # egérkattintás a menüben
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:  # bal klikk
@@ -236,8 +261,6 @@ class Game:
 
     def playing_events(self, event):
         """Eseménykezelés a 'playing' állapotban."""
-        # ezek a változók az osztályban is kezelve vannak, de a globálishoz is hozzáférés kellhet
-        global placing_towers, selected_towers, deleting_towers, dragging_tower, tower_preview_pos, game_state
 
         # billentyűzet eseménykezelés
         if event.type == pg.KEYDOWN:
@@ -289,7 +312,8 @@ class Game:
                 self.game_state = "paused"
 
             # torony elhelyezése
-            elif self.dragging_tower and mouse_pos[0] < map_rect.width and mouse_pos[1] < map_rect.height:  # map_rect globális
+            elif self.dragging_tower and mouse_pos[0] < map_rect.width and mouse_pos[
+                1] < map_rect.height:  # map_rect globális
                 if self.world.money >= c.BUY_COST:
                     current_tower_count = len(self.tower_group)
                     self.create_tower(mouse_pos)
@@ -323,7 +347,6 @@ class Game:
 
     def paused_events(self, event):
         """Eseménykezelés a 'paused' állapotban."""
-        global game_state, running  # running globális ciklushoz
 
         # egérkattintás a szünet képernyőn
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
@@ -333,17 +356,19 @@ class Game:
             if self.exit_button.rect.collidepoint(mouse_pos):
                 self.running = False
 
-    def _draw_menu_screen(self):
+    def draw_menu_screen(self):
         """Kirajzolja a menü képernyő elemeit."""
         screen.blit(start_img, (0, 0))  # start_img globális
         self.start_button.draw(screen)
         self.exit_button_menu.draw(screen)
 
-    def _draw_playing_screen(self):
+    def draw_playing_screen(self):
         """Frissíti és kirajzolja a játék állapotának elemeit."""
         # Objektumok frissítése
         self.enemy_group.update()
         self.tower_group.update()
+
+        self.check_for_game_over()
 
         # térkép és toolbar kirajzolása
         self.world.draw(screen)  # A globális 'screen' felületre rajzolunk
@@ -357,7 +382,6 @@ class Game:
                 if self._spawn_enemy_in_wave():
                     self.last_spawn_time = current_time
                 else:
-
                     if len(self.enemy_group) == 0:
                         self.wave_completed = True
 
@@ -389,6 +413,10 @@ class Game:
         screen.blit(table_img, (330, 35))  # table_img globális
         self.draw_text("Level: " + str(self.world.level), self.large_font, "black", 455, 45)
 
+        # if self.is_game_over():
+        #   self.draw_text("Game over", self.large_font, "black", map_rect.width/2,map_rect.height/2)
+        #  self.draw_text("Press M to menu or escape to exit", self.large_font, "white", map_rect.width/2,(map_rect.height/2)-50)
+
         # Pénz és szív ikonok kirajzolása
         screen.blit(heart_img, (10, 40 + 20))  # heart_img globális
         screen.blit(coin_img, (10, 80 + 20))  # coin_img globális
@@ -406,16 +434,22 @@ class Game:
                     enemy.take_damage(5)
                     break
 
-    def _draw_paused_screen(self):
+    def draw_paused_screen(self):
         """Kirajzolja a szünet képernyő elemeit."""
-        screen.fill("grey50")
-        self.draw_text("PAUSED", self.large_font, "white", screen.get_width() / 2 - 80, screen.get_height() / 2 - 50)
+        screen.fill("#58a846")
+        self.draw_text("PAUSED", self.large_font, "black", screen.get_width() / 2 - 80, screen.get_height() / 2 - 50)
         self.resume_button.draw(screen)
         self.exit_button.draw(screen)
 
+    def draw_gameover_screen(self):
+        screen.fill("#58a846")
+        screen_width, screen_height = pg.display.get_surface().get_size()
+        self.draw_text("Press M for Menu, or Escape to Exit", self.large_font, "black", screen_width / 2, screen_height / 2,center=True)
+        self.draw_text("Game over :/", self.large_font, "black", screen_width / 2,(screen_height / 2) - 50,center=True)
+
     def run(self):
         """A játék fő ciklusa."""
-        global running, game_state, clock  # Globális változók elérése a fő ciklusban
+        self.running = True
 
         while self.running:  # Ez a ciklus az osztály running változóját figyeli
             clock.tick(c.Framerates)  # hány képkockát engedélyez másodpercenként
@@ -432,14 +466,21 @@ class Game:
                     self.playing_events(event)
                 elif self.game_state == "paused":
                     self.paused_events(event)
+                elif self.game_state == "game_over":
+                    self.game_over_events(event)
 
             # A játék kirajzolása és frissítése
             if self.game_state == "menu":
-                self._draw_menu_screen()
+                self.draw_menu_screen()
             elif self.game_state == "playing":
-                self._draw_playing_screen()
+                self.draw_playing_screen()
             elif self.game_state == "paused":
-                self._draw_paused_screen()
+                self.draw_paused_screen()
+            elif self.game_state == "game_over":
+                self.draw_gameover_screen()
+
+            if self.game_state == "exit":
+                self.running = False
 
             pg.display.update()
 
