@@ -8,7 +8,7 @@ MONEY = 250
 LEVEL=0
 WAVE=0
 
-BUY_COST = 5
+BUY_COST = 50
 UPGRADE_COST = 100
 
 # Gombok távolsága egymástól

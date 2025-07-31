@@ -6,6 +6,7 @@ from Game.tower import Tower
 from Game.button import Button
 from Game.enemy_boat import Enemy_boat
 from Game.enemy_pufferfish import Enemy_pufferfish
+import random
 
 # inicializálom a pygamet
 pg.init()
@@ -13,7 +14,6 @@ pg.init()
 clock = pg.time.Clock()
 
 pg.display.set_caption("Játék")
-
 # változók
 #placing_towers = False
 #selected_towers = None
@@ -119,6 +119,7 @@ class Game:
         self.wave_completed = False  # Jelzi, ha egy hullám ellenségei elpusztultak
 
         #self.enemy_individual_spawn_delay_ms = 500
+        self.enemy_list = []
 
         # Koordináták az ellenség útvonalához
         self.koordinatak = [
@@ -166,16 +167,15 @@ class Game:
         """Spawnol egy ellenséget, ha még nem érte el a hullám limitjét."""
 
         if self.enemies_spawned_this_wave < self.enemies_to_spawn_in_wave:
-            # Determine which enemy to spawn next (you'll need logic for this)
-            # For simplicity, let's just spawn a pufferfish for now
-            enemy = Enemy_pufferfish(self.koordinatak, enemy_fish_img1, enemy_fish_img2)
-            enemy_boat = Enemy_boat(self.koordinatak, enemy_boat_img)
-            enemy_pufferfish=Enemy_pufferfish(self.koordinatak,pufferfish1_img,pufferfish2_img)
-            self.enemy_group.add(enemy, enemy_boat,enemy_pufferfish)
+            enemy_type = random.choice([
+                Enemy_pufferfish(self.koordinatak, pufferfish1_img, pufferfish2_img),
+                Enemy_boat(self.koordinatak, enemy_boat_img),
+                Enemy(self.koordinatak, enemy_fish_img1, enemy_fish_img2)
+            ])
+            self.enemy_group.add(enemy_type)
             self.enemies_spawned_this_wave += 1
             return True  # Jelzi, hogy spawnolt egy ellenséget
         return False  # Jelzi, hogy már nem kell több ellenséget spawnolni ebben a hullámban
-
     def draw_text(self, text, font, text_color, x, y, center=False):
         """Számok(szöveg) kiírása a képernyőre"""
         img = font.render(text, True, text_color)
