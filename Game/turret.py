@@ -1,11 +1,12 @@
 import pygame as pg
 
 
-class Tower(pg.sprite.Sprite):
+class Turret(pg.sprite.Sprite):
     """The Tower class represents a tower in the game."""
 
     def __init__(self, images, position):
         """Initialize the tower with images and position."""
+
         # super().__init__() # This is an alternative way to call the parent class constructor
         pg.sprite.Sprite.__init__(self)
         self.range = 90
@@ -23,7 +24,7 @@ class Tower(pg.sprite.Sprite):
 
     def update(self):
 
-        # Frissítem a range_img-et
+        # Update the range circle image
         self.range_img = pg.Surface((self.range * 2, self.range * 2))
         self.range_img.fill((0, 0, 0))
         self.range_img.set_colorkey((0, 0, 0))

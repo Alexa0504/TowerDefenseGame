@@ -1,8 +1,10 @@
 import pygame as pg
+
+from Game.enemy_jellyfish import Enemy_jellyfish
 from Game.world import World
 from Game.enemy import Enemy
 import constants as c
-from Game.tower import Tower
+from Game.turret import Turret
 from Game.button import Button
 from Game.enemy_boat import Enemy_boat
 from Game.enemy_pufferfish import Enemy_pufferfish
@@ -40,12 +42,23 @@ table_img = pg.transform.scale(table_img, (400, 100))
 """Loading enemy"""
 enemy_fish_img1 = pg.image.load('Assets/kepek/Enemy/piroshal.png').convert_alpha()
 enemy_fish_img2 = pg.image.load('Assets/kepek/Enemy/kekhal.png').convert_alpha()
-enemy_boat_img = pg.image.load('Assets/kepek/Enemy/Hajo.png').convert_alpha()
-enemy_boat_img = pg.transform.scale(enemy_boat_img, (100, 100))
+#enemy_boat_img = pg.image.load('Assets/kepek/Enemy/Hajo.png').convert_alpha()
+#nemy_boat_img = pg.transform.scale(enemy_boat_img, (100, 100))
 pufferfish1_img=pg.image.load('Assets/kepek/Enemy/Pufferfish1.png').convert_alpha()
 pufferfish1_img = pg.transform.scale(pufferfish1_img, (75, 75))
 pufferfish2_img=pg.image.load('Assets/kepek/Enemy/Pufferfish2.png').convert_alpha()
 pufferfish2_img = pg.transform.scale(pufferfish2_img, (75, 75))
+
+"""Loading enemy jellyfish"""
+jellyfish_frames=[
+    pg.image.load('Assets/kepek/Enemy/Jellyfish1.png').convert_alpha(),
+    pg.image.load('Assets/kepek/Enemy/Jellyfish2.png').convert_alpha(),
+    pg.image.load('Assets/kepek/Enemy/Jellyfish3.png').convert_alpha(),
+    pg.image.load('Assets/kepek/Enemy/Jellyfish4.png').convert_alpha(),
+    pg.image.load('Assets/kepek/Enemy/Jellyfish5.png').convert_alpha()
+]
+jellyfish_frames=[pg.transform.scale(img,(75,75)) for img in jellyfish_frames]
+
 
 """Load turret animation frames"""
 turret_frames = [
@@ -148,8 +161,9 @@ class Game:
         if self.enemies_spawned_this_wave < self.enemies_to_spawn_in_wave:
             enemy_type = random.choice([
                 Enemy_pufferfish(self.coordinates, pufferfish1_img, pufferfish2_img),
-                Enemy_boat(self.coordinates, enemy_boat_img),
-                Enemy(self.coordinates, enemy_fish_img1, enemy_fish_img2)
+                #Enemy_boat(self.coordinates, enemy_boat_img),
+                Enemy(self.coordinates, enemy_fish_img1, enemy_fish_img2),
+                Enemy_jellyfish(self.coordinates, jellyfish_frames)
             ])
             self.enemy_group.add(enemy_type)
             self.enemies_spawned_this_wave += 1
@@ -168,25 +182,25 @@ class Game:
         screen.blit(img, text_rect)
 
     def create_turret(self, mouse_pos):
-        """Defines valid and invalid areas for tower placement"""
+        """Defines valid and invalid areas for turret placement"""
 
         # Checks if a turret can be placed here
         color = white_map.get_at(mouse_pos)
         if color == pg.Color(255, 255, 255):  #If it's white, placement is not allowed
             return
-        # The tower will be centered at the mouse position.
+        # The turret will be centered at the mouse position.
         new_turret_rect = turret_img.get_rect(center=mouse_pos)
 
-        for tower in self.turret_group:
-            # It checks if the tower is too close to an existing one
-            dist = ((tower.rect.centerx - new_turret_rect.centerx) ** 2 +
-                    (tower.rect.centery - new_turret_rect.centery) ** 2) ** 0.5
-            if dist < 40:  # If it is closer than 40 pixels to another tower
+        for turret in self.turret_group:
+            # It checks if the turret is too close to an existing one
+            dist = ((turret.rect.centerx - new_turret_rect.centerx) ** 2 +
+                    (turret.rect.centery - new_turret_rect.centery) ** 2) ** 0.5
+            if dist < 40:  # If it is closer than 40 pixels to another turret
                 return  # Do not create a new one
 
         # If there is no collision, create it
-        tower = Tower(turret_frames, mouse_pos)
-        self.turret_group.add(tower)
+        turret = Turret(turret_frames, mouse_pos)
+        self.turret_group.add(turret)
 
     def game_reset(self):
         """Resets the game state to the initial values, clearing the world, enemy, and tower groups."""
@@ -222,6 +236,7 @@ class Game:
 
     def game_over_events(self, event):
         """Handles events in the 'game_over' state."""
+
         # If the game is over, we can handle events like pressing 'M' for menu or 'Escape' to exit.
         if event.type == pg.QUIT:
             self.running = False
@@ -236,6 +251,7 @@ class Game:
 
     def menu_events(self, event):
         """Handles events in the 'menu' state."""
+
         # If the game is in the menu state, we can handle events like starting the game or exiting.
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:  # left mouse button
             # Check if the mouse position collides with the start or exit buttons
@@ -247,6 +263,7 @@ class Game:
 
     def playing_events(self, event):
         """Handles events in the 'playing' state."""
+
         # If the game is in the playing state, we can handle events like placing towers,
         # deleting towers, or pausing the game.
         if event.type == pg.KEYDOWN:
@@ -357,8 +374,15 @@ class Game:
         self.enemy_group.update()
         self.turret_group.update()
 
-        self.check_for_game_over()
+        #Health check
+        for enemy in self.enemy_group:
+            if enemy.rect.right >  self.coordinates[10][0]:
+                self.world.health -= 1  # Decrease health by 1 for each enemy that passes
+                enemy.kill() # Remove the enemy from the game once it reaches the end
+                if self.world.health <= 0:  # If health reaches 0, game over
+                    self.game_state = "game_over"
 
+        self.check_for_game_over() # Check if the game is over
 
         self.world.draw(screen)
         toolbar_rect = pg.Rect(map_rect.width, 0, c.Side_panel, map_rect.height)  # At the right edge, at 0 pixels height
@@ -398,14 +422,14 @@ class Game:
 
         # Drawing the enemy and turret groups
         self.enemy_group.draw(screen)
-        self.draw_text(str(self.world.health), self.text_font, "black", 5, 40)
+        self.draw_text(str(self.world.health), self.text_font, "black", 17, 40)
         self.draw_text(str(self.world.money), self.text_font, "black", 5, 80)
         screen.blit(table_img, (330, 35))
         self.draw_text("Level: " + str(self.world.level), self.large_font, "black", 455, 45)
 
 
         #Health and money icons are drawn
-        screen.blit(heart_img, (10, 40 + 20))
+        screen.blit(heart_img, (10, 40 + 23))
         screen.blit(coin_img, (10, 80 + 20))
 
        #Calculate the distance between the centers of the towers and enemies to determine if a tower can fire at an enemy.
@@ -437,8 +461,9 @@ class Game:
 
         screen.fill("#58a846")
         screen_width, screen_height = pg.display.get_surface().get_size()
-        self.draw_text("Press M for Menu, or Escape to Exit", self.large_font, "black", screen_width / 2, screen_height / 2,center=True)
+        self.draw_text("Press M for Menu, or Escape to Exit", self.large_font, "black", screen_width / 2, screen_height / 2, center = True)
         self.draw_text("Game over :/", self.large_font, "black", screen_width / 2,(screen_height / 2) - 50,center=True)
+
 
     def run(self):
         """The main game loop that runs the game."""

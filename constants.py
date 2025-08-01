@@ -3,7 +3,7 @@ Screen_height = 500
 Framerates = 60
 Side_panel = 240
 
-HEALTH = 100
+HEALTH = 3
 MONEY = 250
 LEVEL=1
 WAVE=0
