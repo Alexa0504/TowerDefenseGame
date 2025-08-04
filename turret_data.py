@@ -1,13 +1,13 @@
 TURRET_DATA = [
     {
-        "range": 100,
-        "damage": 5,
+        "range": 80,
+        "damage": 4,
         "cost": 100,
-        "upgrade_cost": 75
+        "upgrade_cost": 50
     },
     {
-        "range": 150,
-        "damage": 10,
+        "range": 130,
+        "damage": 8,
         "cost": None,
         "upgrade_cost": None
     },

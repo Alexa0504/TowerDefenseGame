@@ -13,6 +13,7 @@ from turret_data import TURRET_DATA
 
 """Initialize Pygame"""
 pg.init()
+pg.mixer.quit()
 
 clock = pg.time.Clock()
 
@@ -250,13 +251,11 @@ class Game:
         self.delete_button.image = delete_button_img
 
     def check_for_game_over(self):
-        """Checks if the game is over, if any enemy has reached the end of the path."""
-        # If any enemy's right edge is beyond the end of the path, the game is over.
-        for enemy in self.enemy_group:
-            if enemy.rect.right >= self.coordinates[10][0]:
-                self.is_game_over = True
-                self.game_state = "game_over"
-                return True
+        """Checks if the game is over due to the player's health reaching zero."""
+        if self.world.health == 0:
+            self.is_game_over = True
+            self.game_state = "game_over"
+            return True
         return False
 
     def check_for_victory(self):
@@ -428,6 +427,10 @@ class Game:
 
         self.enemy_group.update()
         self.turret_group.update()
+
+        if self.check_for_game_over() or self.check_for_victory():
+            # Ha a játék állapota megváltozott, itt azonnal visszatérünk
+            return
 
         # Health check
         for enemy in self.enemy_group:

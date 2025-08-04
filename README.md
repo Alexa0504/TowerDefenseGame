@@ -9,7 +9,6 @@ This game is built using Python and the Pygame library. It features a variety of
 - **Waves**: Enemies come in waves, increasing in difficulty.
 - **Resources**: Collect resources to build and upgrade towers.
 - **User Interface**: A simple and intuitive UI to manage your towers and resources.
-- **Sound Effects**: Enjoy sound effects for actions like placing towers and defeating enemies.
 - **Mouse and Keyboard Controls**: Play the game using both mouse clicks and keyboard shortcuts.
 
 
