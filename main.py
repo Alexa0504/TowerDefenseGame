@@ -9,6 +9,8 @@ from Game.enemy_boat import Enemy_boat
 from Game.enemy_pufferfish import Enemy_pufferfish
 import random
 
+from turret_data import TURRET_DATA
+
 """Initialize Pygame"""
 pg.init()
 
@@ -65,6 +67,16 @@ turret_frames = [
     pg.image.load('Assets/kepek/Lovo/ujLovo3.png').convert_alpha(),
     pg.image.load('Assets/kepek/Lovo/ujLovo4.png').convert_alpha()]
 turret_frames = [pg.transform.scale(img, (100, 100)) for img in turret_frames]
+
+turret_frames2 = [
+    pg.image.load('Assets/kepek/Lovo2/LovoUpgrade1.png').convert_alpha(),
+    pg.image.load('Assets/kepek/Lovo2/LovoUpgrade2.png').convert_alpha(),
+    pg.image.load('Assets/kepek/Lovo2/LovoUpgrade3.png').convert_alpha(),
+    pg.image.load('Assets/kepek/Lovo2/LovoUpgrade4.png').convert_alpha()]
+turret_frames2 = [pg.transform.scale(img, (100, 100)) for img in turret_frames2]
+
+## Combine turret frames into a list for easy access
+all_turret_images = [turret_frames, turret_frames2]
 
 """Loading the wturret for basic weapon handling"""
 turret_img = pg.image.load('Assets/kepek/Lovo/ujLovo.png').convert_alpha()
@@ -132,8 +144,9 @@ class Game:
                                  True)
         self.cancel_button = Button(map_rect.width + 20, c.start_y + 1 * (c.button_height + c.padding),
                                     cancel_button_img, True)
-        self.upgrade_button = Button(map_rect.width + 20, c.start_y + 1 * (c.button_height + c.padding),
-                                     upgrade_button_img, True)
+
+        self.upgrade_button = Button(755, 15, upgrade_button_img, True)
+
         self.delete_button = Button(map_rect.width + 20, c.start_y + 2 * (c.button_height + c.padding),
                                     delete_button_img, True)
         self.pause_button = Button(map_rect.width + 20, c.start_y + 3 * (c.button_height + c.padding), pause_button_img,
@@ -210,7 +223,8 @@ class Game:
                 return  # Do not create a new one
 
         # If there is no collision, create it
-        turret = Turret(turret_frames, mouse_pos)
+        # Create a new turret instance with the turret images and the mouse position
+        turret = Turret(all_turret_images, mouse_pos)
         self.turret_group.add(turret)
 
     def game_reset(self):
@@ -248,8 +262,9 @@ class Game:
     def check_for_victory(self):
         """Checks if the player has won the game."""
         # If all enemies have been defeated and there are no enemies left, the player wins.
-        if len(self.enemy_group) == 0 and self.enemies_spawned_this_wave >= self.enemies_to_spawn_in_wave:
-            self.game_state="victory"
+        if self.world.level >= 5 and len(
+                self.enemy_group) == 0 and self.enemies_spawned_this_wave >= self.enemies_to_spawn_in_wave:
+            self.game_state = "victory"
             self.is_game_over = True
             return True
         return False
@@ -333,25 +348,30 @@ class Game:
                 self.game_reset()
             elif self.pause_button.rect.collidepoint(mouse_pos):
                 self.game_state = "paused"  # Switch to the paused state
-            elif self.upgrade_button.rect.collidepoint(mouse_pos):
-                if self.selected_turrets is not None:
-                    if isinstance(self.selected_turrets, Turret): # Check if the selected turret is a Turret instance
-                        upgrade_cost = self.selected_turrets.upgrade_cost
-                        if self.world.money >= upgrade_cost:
-                            self.world.money -= upgrade_cost
-                            self.selected_turrets.upgrade()
-                        else:
-                            print("Nincs elég pénzed a fejlesztéshez!")
 
-            elif self.exit_button.rect.collidepoint(mouse_pos):
-                self.game_state = "menu"  # Return to the menu state
-                self.game_reset()
-            elif self.pause_button.rect.collidepoint(mouse_pos):
-                self.game_state = "paused"  # Switch to the paused state
+            # Upgrade button to upgrade the selected turret
+            elif self.upgrade_button.rect.collidepoint(mouse_pos) and self.selected_turrets:
+                turret = self.selected_turrets
+
+                # Check if the turret can be upgraded further
+                # Use the `upgrade_level` to get the current turret data, which contains the cost for the next upgrade.
+                current_turret_data = TURRET_DATA[turret.upgrade_level]
+                upgrade_cost = current_turret_data.get("upgrade_cost")  # Use .get() for safety
+
+                if upgrade_cost is not None:
+                    if self.world.money >= upgrade_cost:
+                        if turret.upgrade():
+                            self.world.money -= upgrade_cost
+                            self.selected_turrets = None  # Deselect the turret after a successful upgrade
+                    else:
+                        print("Not enough money to upgrade the turret!")
+                else:
+                    print("This turret cannot be upgraded further!")
+
 
             # Turret placement
             # Mouse position is within the map area
-            # If the mouse is within the map area and I am dragging a tower
+            # If the mouse is within the map area and I am dragging a turret
             elif self.dragging_turret and mouse_pos[0] < map_rect.width and mouse_pos[1] < map_rect.height:
                 if self.world.money >= c.BUY_COST:  # Check if there is enough money to buy a turret
                     current_turret_count = len(self.turret_group)  # Count the current number of turrets
@@ -361,43 +381,28 @@ class Game:
                     if len(self.turret_group) > current_turret_count:
                         self.world.money -= c.BUY_COST
                     else:
-                        print("Nem lehet ide tornyot építeni, vagy túl közel van egy másikhoz!")
+                        print("You cannot place a turret here!")
                 else:
-                    print("Nincs elég pénzed")
+                    print("Don't have enough money to place a turret!")
                 self.dragging_turret = False
                 self.placing_turrets = False
                 self.turret_preview_pos = None
 
-            elif self.upgrade_button.rect.collidepoint(mouse_pos):
-                if self.selected_turrets is not None:
-                    # Ellenőrizzük, hogy a játékosnak van-e elég pénze
-                    upgrade_cost = self.selected_turrets.upgrade_cost
-                    if self.world.money >= upgrade_cost:
-                        # Levonjuk a pénzt
-                        self.world.money -= upgrade_cost
-                        # Meghívjuk a turret fejlesztő metódusát
-                        self.selected_turrets.upgrade()
-                    else:
-                        # Ha nincs elég pénz, írunk egy üzenetet
-                        print("Nincs elég pénzed a fejlesztéshez!")
-
-
-            # If the mouse is within the map area and I am not dragging a turret
-            elif mouse_pos[0] < map_rect.width and not self.dragging_turret:
-                clicked_on_tower = False
-                for tower in self.turret_group:  # This checks if the mouse is on a turret
-                    # If the mouse position collides with a turret's rectangle
-                    if tower.rect.collidepoint(mouse_pos):
-                        clicked_on_tower = True
+            # If the mouse is not dragging a turret, check if it clicked on a turret
+            else:
+                clicked_on_turret = False
+                for turret in self.turret_group:
+                    if turret.rect.collidepoint(mouse_pos):
+                        clicked_on_turret = True
                         if self.deleting_turrets:
-                            tower.kill()
+                            turret.kill()
                             self.selected_turrets = None
                             self.deleting_turrets = False
-                            self.delete_button.image = delete_button_img  # Törlés után visszaáll a gomb képe (globális kép)
+                            self.delete_button.image = delete_button_img
                         else:
-                            self.selected_turrets = tower
+                            self.selected_turrets = turret  # Select the turret that was clicked on
                         break
-                if not clicked_on_tower:
+                if not clicked_on_turret:  # If no turret was clicked, deselect any selected turret
                     self.selected_turrets = None
 
     def paused_events(self, event):
@@ -457,16 +462,15 @@ class Game:
 
         # Drawing the turret preview image if dragging a turret
         if self.dragging_turret:
-            self.turret_preview_pos = pg.mouse.get_pos()  # Get the current mouse position
-            # If the turret preview position is within the map area
+            self.turret_preview_pos = pg.mouse.get_pos()
             if self.turret_preview_pos[0] < map_rect.width:
-                preview_rect = turret_img.get_rect(center=self.turret_preview_pos)  # The turret preview will be centered at the mouse position
+                preview_rect = turret_img.get_rect(center=self.turret_preview_pos)
                 screen.blit(turret_img, preview_rect)
 
-            # Draw a range circle around the turret preview position to indicate the range
-            turret_range = 100
-
-            pg.draw.circle(screen,(255, 0, 0),self.turret_preview_pos,turret_range,2) # Draw a red circle around the turret preview position to indicate the range
+                # Draw the range circle for the turret preview
+                # The range is taken from the turret data, which is a list of dictionaries
+                base_range = TURRET_DATA[0]["range"]
+                pg.draw.circle(screen, (255, 0, 0, 150), self.turret_preview_pos, base_range, 2)
 
         # Buttons are drawn on the screen
         self.buy_button.draw(screen)
@@ -479,7 +483,12 @@ class Game:
         self.delete_button.draw(screen)
         self.pause_button.draw(screen)
         self.exit_button.draw(screen)
-        #self.upgrade_button.draw(screen)
+
+        if self.selected_turrets and isinstance(self.selected_turrets, Turret):
+            turret = self.selected_turrets
+            if turret.upgrade_level < len(TURRET_DATA) - 1:
+                self.upgrade_button.draw(screen)
+
 
         # Drawing the enemy and turret groups
         self.enemy_group.draw(screen)
@@ -496,7 +505,7 @@ class Game:
         # Calculate the distance between the centers of the towers and enemies to determine if a tower can fire at an enemy.
         # If the tower is selected, it will be highlighted with a range circle.
         for turret in self.turret_group:
-            turret.update()
+            #turret.update()
             turret.draw(screen, selected=(turret == self.selected_turrets))  # Draw the tower, highlighting it if it is selected
             for enemy in self.enemy_group:
                 # Calculate the distance between the tower and the enemy

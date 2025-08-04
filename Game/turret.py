@@ -6,83 +6,75 @@ import constants as c
 class Turret(pg.sprite.Sprite):
     """The Tower class represents a tower in the game."""
 
-    def __init__(self, images, position):
-        """Initialize the tower with images and position."""
+    def __init__(self, all_images, position):
+        """Initialize the turret with its images and position."""
 
-        # super().__init__() # This is an alternative way to call the parent class constructor
         pg.sprite.Sprite.__init__(self)
-        self.upgrade_level=1
-        self.range = TURRET_DATA[self.upgrade_level-1].get("range")  # Range of the tower based on upgrade level
-        self.damage = TURRET_DATA[self.upgrade_level - 1].get("damage")
-        self.upgrade_cost = TURRET_DATA[self.upgrade_level - 1].get("upgrade_cost")
-        self.upgrade_cost = 50
-        self.images = images  #List of images for the tower
-        self.image = self.images[0]  # The first image is the default one
+        self.upgrade_level = 0  # Starting upgrade level
+        # Store all images for different upgrade levels
+        self.all_images = all_images # A dictionary where keys are upgrade levels and values are lists of images
+        self.images = self.all_images[self.upgrade_level] # List of images for the current upgrade level
+        self.image = self.images[0] # The first image in the list is the default image
         self.rect = self.image.get_rect()
         self.rect.center = position
-        self.selected = False
 
-        #Animation attributes
+        # Initialize stats based on the current upgrade level
+        self.set_stats()
+
+        # Animation attributes
         self.animating = False
         self.frame_index = 0
         self.last_update = pg.time.get_ticks()
-        self.animation_speed = 100  # 0.1 sec per frame
+        self.animation_speed = 100
+
+    def set_stats(self):
+        """Sets the turret's stats based on the current upgrade level."""
+
+        stats = TURRET_DATA[self.upgrade_level] # A dictionary containing stats for the current upgrade level
+        self.range = stats["range"] # The range of the turret
+        self.damage = stats["damage"] # The damage dealt by the turret
+
+    def upgrade(self):
+        """Upgrades the turret to the next level if available."""
+
+        if self.upgrade_level + 1 < len(TURRET_DATA): # Check if there is a next upgrade level
+            self.upgrade_level += 1 # Increment the upgrade level
+            self.images = self.all_images[self.upgrade_level] # Update the images to the next level's images
+            self.image = self.images[0] # Reset to the first image of the new level
+            self.set_stats()  # Update stats after upgrade
+            return True
+        return False
 
     def update(self):
+        """Update the turret's state: animate if necessary."""
 
-        # Update the range circle image
-        self.range_img = pg.Surface((self.range * 2, self.range * 2))
-        self.range_img.fill((0, 0, 0))
-        self.range_img.set_colorkey((0, 0, 0))
-        pg.draw.circle(self.range_img, "grey100", (self.range, self.range), self.range)
-        self.range_img.set_alpha(100)  # 100 means 100/255 opacity
-        self.range_rect = self.range_img.get_rect()  #The circle's rectangle
-
-        # Set the position of the range rectangle to the center of the tower
-        self.range_rect.center = self.rect.center
-
+        now = pg.time.get_ticks()
         if self.animating:
-            now = pg.time.get_ticks()
             if now - self.last_update > self.animation_speed:
                 self.last_update = now
                 self.frame_index += 1
                 if self.frame_index >= len(self.images):
                     self.frame_index = 0
-                    self.animating = False  # The end of the animation
-                # Update the image to the next frame
+                    self.animating = False
                 self.image = self.images[self.frame_index]
 
-    def upgrade(self):
-        self.upgrade_level += 1
-
-        # Check if the upgrade level exceeds the maximum level
-        self.range = TURRET_DATA[self.upgrade_level - 1].get("range")
-        self.damage = TURRET_DATA[self.upgrade_level - 1].get("damage")
-        self.upgrade_cost = TURRET_DATA[self.upgrade_level - 1].get("upgrade_cost")
-
-        # Check if the upgrade level is within the valid range
-        self.image = self.images[self.upgrade_level - 1]
-        # Update the range circle image based on the new upgrade level
-        # Update the range circle image
-        self.range_img = pg.Surface((self.range * 2, self.range * 2))
-        self.range_img.fill((0, 0, 0))
-        self.range_img.set_colorkey((0, 0, 0))
-        pg.draw.circle(self.range_img, "grey100", (self.range, self.range), self.range)
-        self.range_img.set_alpha(100)  # 100 means 100/255 opacity
-        self.range_rect = self.range_img.get_rect()  #The circle's rectangle
-
-        # Set the position of the range rectangle to the center of the tower
-        self.range_rect.center = self.rect.center
 
     def fire(self):
-        # This method is called to start the animation
+        """Starts the firing animation of the turret."""
+
         if not self.animating:
             self.animating = True
             self.frame_index = 0
-            self.image = self.images[0]
+            self.last_update = pg.time.get_ticks()
 
     def draw(self, surface, selected=False):
+        """Draws the turret on the given surface, optionally showing its range if selected."""
+
         if selected:
-            surface.blit(self.range_img, self.range_rect)  # Draw the range circle
-        # Draw the tower image
+            # Draw the range of the turret
+            range_surface = pg.Surface((self.range * 2, self.range * 2), pg.SRCALPHA) # Create a transparent surface for the range
+            pg.draw.circle(range_surface, (100, 100, 255, 100), (self.range, self.range), self.range)
+            surface.blit(range_surface, (self.rect.centerx - self.range, self.rect.centery - self.range))
+
+        # Draw the turret image on the surface
         surface.blit(self.image, self.rect)

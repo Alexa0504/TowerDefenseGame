@@ -9,7 +9,7 @@ LEVEL=1
 #WAVE=0
 
 BUY_COST = 100
-UPGRADE_COST = 50
+#UPGRADE_COST = 50
 
 # Gombok távolsága egymástól
 button_height = 130
