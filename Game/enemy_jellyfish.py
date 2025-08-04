@@ -21,9 +21,10 @@ class Enemy_jellyfish(pg.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.position)
 
         self.target_waypoint = 1
-        self.speed = 3
+        self.speed = 2.5
         self.health = health
         self.angle = 0
+        self.money_value = 30
 
         self.animation_speed = 0.1  # Change image every 0.1 seconds
         self.last_switch_time = time.time()  # Time for animation switch

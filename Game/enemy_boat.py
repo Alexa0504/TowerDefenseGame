@@ -12,6 +12,8 @@ class Enemy_boat(pg.sprite.Sprite):
         self.health = 200
         self.speed = 3
         self.angle = 0
+        self.money_value = 25
+
         self.original_image = image
         self.image = image
         self.image = pg.transform.rotate(self.original_image, self.angle)

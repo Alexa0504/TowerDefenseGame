@@ -16,9 +16,10 @@ class Enemy(pg.sprite.Sprite):
         self.waypoint = waypoint
         self.position = Vector2(self.waypoint[0])
         self.target_waypoint = 1
-        self.speed = 3
+        self.speed = 1.5
         self.health = health
         self.angle = 0
+        self.money_value = 10
 
         # Randomly choose between two sizes
         self.is_big = random.choice([True, False])

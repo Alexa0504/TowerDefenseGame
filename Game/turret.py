@@ -1,4 +1,5 @@
 import pygame as pg
+from turret_data import TURRET_DATA
 
 
 class Turret(pg.sprite.Sprite):
@@ -9,7 +10,7 @@ class Turret(pg.sprite.Sprite):
 
         # super().__init__() # This is an alternative way to call the parent class constructor
         pg.sprite.Sprite.__init__(self)
-        self.range = 90
+        self.range = 100
         self.images = images  #List of images for the tower
         self.image = self.images[0]  # The first image is the default one
         self.rect = self.image.get_rect()
