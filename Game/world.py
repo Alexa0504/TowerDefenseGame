@@ -11,6 +11,7 @@ class World():
         self.health = c.HEALTH
         self.money = c.MONEY
         self.level = c.LEVEL
+        self.upgrade_cost=c.UPGRADE_COST
         #self.wave=c.WAVE
 
     def draw(self, surface):

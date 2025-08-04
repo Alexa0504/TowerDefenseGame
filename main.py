@@ -85,6 +85,8 @@ exit_button_menu_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/EXI
                                           (200, 190))
 pause_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/PAUSEGOMB.png').convert_alpha(), (200, 190))
 resume_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/RESUME.png').convert_alpha(), (200, 190))
+upgrade_button_img = pg.transform.scale(pg.image.load('Assets/kepek/Gombok/UPGRADEGOMB.png').convert_alpha(), (200, 190))
+
 
 """Money and health icons"""
 coin_img = pg.image.load('Assets/kepek/Coin.png').convert_alpha()
@@ -130,6 +132,8 @@ class Game:
                                  True)
         self.cancel_button = Button(map_rect.width + 20, c.start_y + 1 * (c.button_height + c.padding),
                                     cancel_button_img, True)
+        self.upgrade_button = Button(map_rect.width + 20, c.start_y + 1 * (c.button_height + c.padding),
+                                     upgrade_button_img, True)
         self.delete_button = Button(map_rect.width + 20, c.start_y + 2 * (c.button_height + c.padding),
                                     delete_button_img, True)
         self.pause_button = Button(map_rect.width + 20, c.start_y + 3 * (c.button_height + c.padding), pause_button_img,
@@ -329,6 +333,21 @@ class Game:
                 self.game_reset()
             elif self.pause_button.rect.collidepoint(mouse_pos):
                 self.game_state = "paused"  # Switch to the paused state
+            elif self.upgrade_button.rect.collidepoint(mouse_pos):
+                if self.selected_turrets is not None:
+                    if isinstance(self.selected_turrets, Turret): # Check if the selected turret is a Turret instance
+                        upgrade_cost = self.selected_turrets.upgrade_cost
+                        if self.world.money >= upgrade_cost:
+                            self.world.money -= upgrade_cost
+                            self.selected_turrets.upgrade()
+                        else:
+                            print("Nincs elég pénzed a fejlesztéshez!")
+
+            elif self.exit_button.rect.collidepoint(mouse_pos):
+                self.game_state = "menu"  # Return to the menu state
+                self.game_reset()
+            elif self.pause_button.rect.collidepoint(mouse_pos):
+                self.game_state = "paused"  # Switch to the paused state
 
             # Turret placement
             # Mouse position is within the map area
@@ -348,6 +367,20 @@ class Game:
                 self.dragging_turret = False
                 self.placing_turrets = False
                 self.turret_preview_pos = None
+
+            elif self.upgrade_button.rect.collidepoint(mouse_pos):
+                if self.selected_turrets is not None:
+                    # Ellenőrizzük, hogy a játékosnak van-e elég pénze
+                    upgrade_cost = self.selected_turrets.upgrade_cost
+                    if self.world.money >= upgrade_cost:
+                        # Levonjuk a pénzt
+                        self.world.money -= upgrade_cost
+                        # Meghívjuk a turret fejlesztő metódusát
+                        self.selected_turrets.upgrade()
+                    else:
+                        # Ha nincs elég pénz, írunk egy üzenetet
+                        print("Nincs elég pénzed a fejlesztéshez!")
+
 
             # If the mouse is within the map area and I am not dragging a turret
             elif mouse_pos[0] < map_rect.width and not self.dragging_turret:
@@ -437,12 +470,16 @@ class Game:
 
         # Buttons are drawn on the screen
         self.buy_button.draw(screen)
-        if self.placing_turrets:  # If placing turrets, show the cancel button
+        if self.placing_turrets:
             self.cancel_button.draw(screen)
+        elif self.selected_turrets is not None:
+            self.upgrade_button.draw(screen)
+
 
         self.delete_button.draw(screen)
         self.pause_button.draw(screen)
         self.exit_button.draw(screen)
+        #self.upgrade_button.draw(screen)
 
         # Drawing the enemy and turret groups
         self.enemy_group.draw(screen)
@@ -467,7 +504,7 @@ class Game:
                             (turret.rect.centery - enemy.rect.centery) ** 2) ** 0.5
                 if distance < turret.range:
                     turret.fire()
-                    enemy.take_damage(5)
+                    enemy.take_damage(turret.damage)
                     if enemy.health <= 0:
                         self.world.money += enemy.money_value # If the enemy's health reaches 0, it is removed and money is added to the player's balance
                     break
