@@ -13,17 +13,16 @@ class Enemy_pufferfish(pg.sprite.Sprite):
 
         pg.sprite.Sprite.__init__(self)
         self.waypoint = waypoint
-        self.position = Vector2(self.waypoint[0])
-        self.target_waypoint = 1
-        self.speed = 2
+        self.position = Vector2(self.waypoint[0]) #The first waypoint
+        self.target_waypoint = 1 # Next waypoint index
+        self.speed = 2 #Speed of the pufferfish
         self.health = health
-        self.angle = 0
+        self.angle = 0 # Angle for rotation
         self.money_value = 20  # Money value for the pufferfish
 
         self.original_image1 = image1
         self.original_image2 = image2
 
-        # Randomly choose between two sizes
         self.animation_speed = 1 # Change image every second
         self.last_switch_time = time.time() # Time for animation switch
 
@@ -90,7 +89,7 @@ class Enemy_pufferfish(pg.sprite.Sprite):
     def rotate(self):
         """Rotate the pufferfish image to face the direction of movement."""
 
-        dist = self.target - self.position
+        dist = self.target - self.position # Calculate the distance vector to the target waypoint
         self.angle = math.degrees(math.atan2(-dist[1], dist[0]))
         # rotate image and update rectangle
         self.image = pg.transform.rotate(self.original, self.angle)

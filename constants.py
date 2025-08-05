@@ -13,5 +13,6 @@ BUY_COST = 100
 
 # Gombok távolsága egymástól
 button_height = 130
+button_width=275
 padding = 5
 start_y = 40  # első gomb teteje

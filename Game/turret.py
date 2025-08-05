@@ -29,7 +29,7 @@ class Turret(pg.sprite.Sprite):
 
     def set_stats(self):
         """Sets the turret's stats based on the current upgrade level."""
-
+        """Sets the turret's range and damage based on the upgrade level."""
         stats = TURRET_DATA[self.upgrade_level] # A dictionary containing stats for the current upgrade level
         self.range = stats["range"] # The range of the turret
         self.damage = stats["damage"] # The damage dealt by the turret
@@ -42,26 +42,32 @@ class Turret(pg.sprite.Sprite):
             self.images = self.all_images[self.upgrade_level] # Update the images to the next level's images
             self.image = self.images[0] # Reset to the first image of the new level
             self.set_stats()  # Update stats after upgrade
-            return True
-        return False
+            return True #The upgrade was successful
+        return False # No further upgrades available, return False
 
     def update(self):
         """Update the turret's state: animate if necessary."""
 
         now = pg.time.get_ticks()
         if self.animating:
-            if now - self.last_update > self.animation_speed:
+            # If the turret is animating, update the frame based on the animation speed
+            # Check if enough time has passed to update the frame
+            if now - self.last_update > self.animation_speed: #Consistent frame rate
                 self.last_update = now
                 self.frame_index += 1
-                if self.frame_index >= len(self.images):
+                if self.frame_index >= len(self.images): #If the frame index reaches the end of the images list
+                    # Reset the frame index and stop animating
                     self.frame_index = 0
                     self.animating = False
+                # Update the turret's image to the current frame
                 self.image = self.images[self.frame_index]
 
 
     def fire(self):
         """Starts the firing animation of the turret."""
 
+        # Check if the turret is not already animating
+        # This prevents the turret from starting a new animation if it's already in one
         if not self.animating:
             self.animating = True
             self.frame_index = 0
@@ -73,7 +79,9 @@ class Turret(pg.sprite.Sprite):
         if selected:
             # Draw the range of the turret
             range_surface = pg.Surface((self.range * 2, self.range * 2), pg.SRCALPHA) # Create a transparent surface for the range
+            # Draw a circle on the range surface with a semi-transparent color
             pg.draw.circle(range_surface, (100, 100, 255, 100), (self.range, self.range), self.range)
+           # Blit the range surface onto the main surface at the turret's center position
             surface.blit(range_surface, (self.rect.centerx - self.range, self.rect.centery - self.range))
 
         # Draw the turret image on the surface

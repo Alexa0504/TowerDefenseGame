@@ -23,7 +23,7 @@ clock = pg.time.Clock()
 
 """Map"""
 map_image = pg.image.load('Assets/kepek/terkep.png')
-map_rect = map_image.get_rect()
+map_rect = map_image.get_rect()#This rectangle represents the map area where the game takes place.
 
 """Screen and side panel"""
 screen = pg.display.set_mode((map_rect.width + c.Side_panel, map_rect.height))
@@ -79,7 +79,7 @@ turret_frames2 = [pg.transform.scale(img, (100, 100)) for img in turret_frames2]
 ## Combine turret frames into a list for easy access
 all_turret_images = [turret_frames, turret_frames2]
 
-"""Loading the wturret for basic weapon handling"""
+"""Loading the turret for basic weapon handling"""
 turret_img = pg.image.load('Assets/kepek/Lovo/ujLovo.png').convert_alpha()
 turret_img = pg.transform.scale(turret_img, (100, 100))
 
@@ -122,6 +122,7 @@ class Game:
         self.running = True
         self.is_game_over = False
 
+        # Initialize the game world with the map image
         self.world = World(map_image)
         self.enemy_group = pg.sprite.Group()
         self.turret_group = pg.sprite.Group()
@@ -129,11 +130,10 @@ class Game:
         self.SPAWN_DELAY = 1000  # 1000 ms = 1 second
         self.last_spawn_time = 0
 
-        self.enemies_to_spawn_in_wave = 5
+        self.enemies_to_spawn_in_wave = 10  # The number of enemies to spawn in the current wave
         self.enemies_spawned_this_wave = 0
         self.wave_completed = False
 
-        self.enemy_list = []
 
         self.coordinates = [
             (179, 9), (113, 60), (115, 207), (227, 331), (397, 345),
@@ -167,7 +167,7 @@ class Game:
         """Prepares and starts the next enemy wave."""
 
         # Level up
-        if self.world.level < 5:
+        if self.world.level <= 5:
             self.world.level += 1
         else:
             print("Finished")
@@ -178,7 +178,7 @@ class Game:
         self.wave_completed = False
         self.last_spawn_time = pg.time.get_ticks()  # Reset the spawn timer for the new wave
 
-        self.enemies_to_spawn_in_wave = 5 + (self.world.level - 1) * 4  # The number of enemies always increases by two with each level.
+        self.enemies_to_spawn_in_wave = 5 + (self.world.level - 1) * 4  # The number of enemies to spawn increases with each wave
 
     def spawn_enemy_in_wave(self):
         """Spawns an enemy if the wave limit has not been reached yet"""
@@ -198,7 +198,7 @@ class Game:
     def draw_text(self, text, font, text_color, x, y, center=False):
         """Displays numbers (text) on the screen"""
 
-        img = font.render(text, True, text_color)
+        img = font.render(text, True, text_color)#The True parameter enables anti-aliasing, which smooths the edges of the text.
         text_rect = img.get_rect()
         if center:
             text_rect.center = (x, y)  # If True, it will display the text centered on the screen
@@ -219,7 +219,7 @@ class Game:
         for turret in self.turret_group:
             # It checks if the turret is too close to an existing one
             dist = ((turret.rect.centerx - new_turret_rect.centerx) ** 2 +
-                    (turret.rect.centery - new_turret_rect.centery) ** 2) ** 0.5
+                    (turret.rect.centery - new_turret_rect.centery) ** 2) ** 0.5 #Pitagorean theorem to calculate the distance between the centers of the turrets
             if dist < 40:  # If it is closer than 40 pixels to another turret
                 return  # Do not create a new one
 
@@ -317,9 +317,9 @@ class Game:
                 self.deleting_turrets = False
                 self.selected_turrets = None
                 self.delete_button.image = delete_button_img
+
         elif event.type == pg.MOUSEBUTTONDOWN and event.button == 1:  # left mouse button
             mouse_pos = event.pos  # Get the mouse position
-
             # Check if the mouse position collides with the buttons
             if self.delete_button.rect.collidepoint(mouse_pos):
                 self.deleting_turrets = not self.deleting_turrets
@@ -347,15 +347,13 @@ class Game:
                 self.game_reset()
             elif self.pause_button.rect.collidepoint(mouse_pos):
                 self.game_state = "paused"  # Switch to the paused state
-
             # Upgrade button to upgrade the selected turret
             elif self.upgrade_button.rect.collidepoint(mouse_pos) and self.selected_turrets:
                 turret = self.selected_turrets
-
                 # Check if the turret can be upgraded further
                 # Use the `upgrade_level` to get the current turret data, which contains the cost for the next upgrade.
                 current_turret_data = TURRET_DATA[turret.upgrade_level]
-                upgrade_cost = current_turret_data.get("upgrade_cost")  # Use .get() for safety
+                upgrade_cost = current_turret_data.get("upgrade_cost")
 
                 if upgrade_cost is not None:
                     if self.world.money >= upgrade_cost:
@@ -413,12 +411,12 @@ class Game:
             if self.resume_button.rect.collidepoint(mouse_pos):
                 self.game_state = "playing"
             if self.exit_button.rect.collidepoint(mouse_pos):
-                self.running = False
+                self.game_state= "menu"  # Return to the menu state
 
     def draw_menu_screen(self):
         """The main menu screen is drawn here."""
 
-        screen.blit(start_img, (0, 0))  # Draw the background image
+        screen.blit(start_img, (0, 0))  # Draw the background image left-aligned at (0, 0)
         self.start_button.draw(screen)
         self.exit_button_menu.draw(screen)
 
@@ -429,7 +427,6 @@ class Game:
         self.turret_group.update()
 
         if self.check_for_game_over() or self.check_for_victory():
-            # Ha a játék állapota megváltozott, itt azonnal visszatérünk
             return
 
         # Health check
@@ -466,8 +463,8 @@ class Game:
         # Drawing the turret preview image if dragging a turret
         if self.dragging_turret:
             self.turret_preview_pos = pg.mouse.get_pos()
-            if self.turret_preview_pos[0] < map_rect.width:
-                preview_rect = turret_img.get_rect(center=self.turret_preview_pos)
+            if self.turret_preview_pos[0] < map_rect.width: # If the mouse is within the map area, x coordinate is less than the map width
+                preview_rect = turret_img.get_rect(center=self.turret_preview_pos) # Center the turret preview at the mouse position
                 screen.blit(turret_img, preview_rect)
 
                 # Draw the range circle for the turret preview
@@ -487,9 +484,9 @@ class Game:
         self.pause_button.draw(screen)
         self.exit_button.draw(screen)
 
-        if self.selected_turrets and isinstance(self.selected_turrets, Turret):
+        if self.selected_turrets and isinstance(self.selected_turrets, Turret): # If a turret is selected and it is an instance of the Turret class
             turret = self.selected_turrets
-            if turret.upgrade_level < len(TURRET_DATA) - 1:
+            if turret.upgrade_level < len(TURRET_DATA) - 1: # Check if the turret can be upgraded, max level is the last one
                 self.upgrade_button.draw(screen)
 
 
@@ -519,15 +516,17 @@ class Game:
                     enemy.take_damage(turret.damage)
                     if enemy.health <= 0:
                         self.world.money += enemy.money_value # If the enemy's health reaches 0, it is removed and money is added to the player's balance
-                    break
+                    break # # Break the loop after firing at the first enemy within range
 
     def draw_paused_screen(self):
         """The paused screen is drawn here."""
         """Displays the paused screen with options to resume or exit."""
 
         screen.fill("#58a846")
-        self.draw_text("PAUSED", self.large_font, "black", screen.get_width() / 2 - 80,
-                       screen.get_height() / 2 - 50)  # The text is centered
+        screen_width, screen_height = pg.display.get_surface().get_size()
+        self.draw_text("PAUSED", self.large_font, "black", screen_width / 2,
+                       screen_height / 2, center=True)
+
         self.resume_button.draw(screen)
         self.exit_button.draw(screen)
 
@@ -535,12 +534,12 @@ class Game:
         """The game over screen is drawn here."""
         """Displays the game over screen with options to return to the menu or exit."""
 
-        screen.fill("#58a846")
+        screen.fill("#fc0000")
         screen_width, screen_height = pg.display.get_surface().get_size()
+        self.draw_text("Game over :/", self.large_font, "black", screen_width / 2, (screen_height / 2) -50,
+                       center=True) # 50 pixels above the center
         self.draw_text("Press M for Menu, or Escape to Exit", self.large_font, "black", screen_width / 2,
                        screen_height / 2, center=True)
-        self.draw_text("Game over :/", self.large_font, "black", screen_width / 2, (screen_height / 2) - 50,
-                       center=True)
 
     def draw_victory_screen(self):
         """The victory screen is drawn here."""

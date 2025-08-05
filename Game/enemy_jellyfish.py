@@ -44,7 +44,8 @@ class Enemy_jellyfish(pg.sprite.Sprite):
             # Switch to the next image in the list, cycling back to the start
             self.current_image_index = (self.current_image_index + 1) % len(self.images)
             self.original_image = self.images[self.current_image_index]
-            # Készíts egy másolatot az eredeti képről
+            #Make a copy of the original image for rotation
+
             self.image = self.original_image.copy()
 
     def move(self):
