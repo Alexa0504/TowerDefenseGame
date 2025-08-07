@@ -231,6 +231,7 @@ class Game:
     def game_reset(self):
         """Resets the game state to the initial values, clearing the world, enemy, and tower groups."""
 
+        #self.world.level=1
         self.world = World(map_image)
         self.enemy_group.empty()
         self.turret_group.empty()
@@ -249,6 +250,8 @@ class Game:
         self.dragging_turret = False
         self.turret_preview_pos = None
         self.delete_button.image = delete_button_img
+
+
 
     def check_for_game_over(self):
         """Checks if the game is over due to the player's health reaching zero."""
@@ -412,6 +415,7 @@ class Game:
                 self.game_state = "playing"
             if self.exit_button.rect.collidepoint(mouse_pos):
                 self.game_state= "menu"  # Return to the menu state
+                self.game_reset()
 
     def draw_menu_screen(self):
         """The main menu screen is drawn here."""

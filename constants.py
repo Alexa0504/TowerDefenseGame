@@ -11,8 +11,8 @@ LEVEL=1
 BUY_COST = 100
 #UPGRADE_COST = 50
 
-# Gombok távolsága egymástól
+# Distance between buttons
 button_height = 130
 button_width=275
 padding = 5
-start_y = 40  # első gomb teteje
+start_y = 40  # First button's y position (top of the side panel)
